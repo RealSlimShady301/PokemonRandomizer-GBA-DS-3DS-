@@ -91,7 +91,12 @@
     'Bezig met randomizen…': 'Randomizing…', 'Klaar! Gerandomizede ROM gedownload.': 'Done! Randomized ROM downloaded.', 'Hashes herberekenen…': 'Recalculating hashes…',
     'Klaar! LayeredFS-zip gedownload.': 'Done! LayeredFS zip downloaded.', 'Vul het IP-adres van je 3DS in (staat bovenaan in FTPD).': 'Enter the IP address of your 3DS (shown at the top of FTPD).',
     'Versturen naar 3DS ({0})…': 'Sending to 3DS ({0})…', 'Klaar! {0} bestanden op je 3DS gezet. Sluit FTPD en start het spel.': 'Done! {0} files put on your 3DS. Close FTPD and start the game.',
-    'Fout: {0}': 'Error: {0}', '1 op {0}': '1 in {0}', '(normaal)': '(normal)', 'wilde gebieden': 'wild areas', 'leersets': 'learnsets', 'starters gevonden': 'starters found',
+    'Fout: {0}': 'Error: {0}',
+    'Preset': 'Preset', 'Klassiek': 'Classic', 'Chaos': 'Chaos', 'Nuzlocke-vriendelijk': 'Nuzlocke-friendly', 'Standaard': 'Default',
+    'Instellingencode kopiëren': 'Copy settings code', 'Code laden': 'Load code', 'Overzicht "waar vang je wat?" in de log': '"Where to catch what" overview in the log',
+    'Evolutie-levels willekeurig (ongeveer ±30%)': 'Random evolution levels (about ±30%)', 'Preset "{0}" toegepast.': 'Preset "{0}" applied.',
+    'Instellingencode gekopieerd naar het klembord.': 'Settings code copied to the clipboard.', 'Kopieer deze code:': 'Copy this code:',
+    'Plak hier een instellingencode:': 'Paste a settings code here:', 'Instellingencode geladen.': 'Settings code loaded.', 'Deze code klopt niet.': 'This code is not valid.', '1 op {0}': '1 in {0}', '(normaal)': '(normal)', 'wilde gebieden': 'wild areas', 'leersets': 'learnsets', 'starters gevonden': 'starters found',
     'Title ID: {0} — LayeredFS-map: luma/titles/{0}/': 'Title ID: {0} — LayeredFS folder: luma/titles/{0}/',
     // ---- waarschuwingen van de game-modules ----
     'Pokémon Mystery Dungeon wordt herkend, maar kan nog niet gerandomized worden (gepland).': 'Pokémon Mystery Dungeon is recognised, but cannot be randomized yet (planned).',

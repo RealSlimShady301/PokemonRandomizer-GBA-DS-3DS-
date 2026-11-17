@@ -29,7 +29,7 @@
 
   // ---------- Instellingen per game onthouden ----------
   const settingsKey = () => 'pkr:opts:' + (game ? game.titleId || game.name : 'algemeen');
-  const fields = () => document.querySelectorAll('#opts input, #opts select, #outBox input, #outBox select');
+  const fields = () => document.querySelectorAll('#opts input, #opts select, #outBox input, #outBox select, #presetBox input');
   function saveSettings() {
     if (!game) return;
     const s = {};
@@ -53,7 +53,40 @@
     if (!$('ftpHost').value) $('ftpHost').value = store.get('pkr:ftpHost') || '';
     return !!s;
   }
-  document.addEventListener('change', (e) => { if (e.target.closest('#opts, #outBox')) { saveSettings(); updateOutBox(); } });
+  document.addEventListener('change', (e) => { if (e.target.closest('#opts, #outBox, #presetBox')) { saveSettings(); updateOutBox(); } });
+
+  // ---- Presets en instellingencode ----
+  const allFields = () => document.querySelectorAll('#opts input, #opts select, #presetBox input');
+  const collect = () => { const s = {}; allFields().forEach((el) => { if (el.type === 'radio') { if (el.checked) s['r:' + el.name] = el.value; } else if (el.type === 'checkbox') s['c:' + el.id] = el.checked; else if (el.id && !/^cs\d$/.test(el.id)) s['v:' + el.id] = el.value; }); return s; };
+  const apply = (s) => allFields().forEach((el) => {
+    if (el.type === 'radio') { if (s['r:' + el.name] !== undefined) el.checked = s['r:' + el.name] === el.value; }
+    else if (el.type === 'checkbox') { if (s['c:' + el.id] !== undefined) el.checked = s['c:' + el.id]; }
+    else if (el.id && s['v:' + el.id] !== undefined) el.value = s['v:' + el.id];
+  });
+  const DEFAULTS = collect(); // zoals de pagina start
+  const PRESETS = {
+    reset: {},
+    classic: { 'r:starters': 'random', 'r:wild': 'similar', 'r:trainers': 'similar', 'c:keepGymTypes': true, 'c:abilities': false, 'r:learnsets': 'stab', 'c:fixTradeEvos': true, 'r:statics': 'similar', 'c:giftsToo': true, 'c:protectStory': true, 'c:trades': true },
+    chaos: { 'r:stats': 'random', 'r:types': 'random', 'c:abilities': true, 'c:banWonderGuard': false, 'c:banBadAbilities': false, 'r:starters': 'random', 'c:starterNoLeg': false, 'r:wild': 'random', 'c:wildNoLeg': false, 'r:trainers': 'random', 'c:trainerNoLeg': false, 'r:learnsets': 'random', 'c:tms': true, 'r:tmCompat': 'random', 'r:statics': 'random', 'c:staticLegSwap': false, 'c:giftsToo': true, 'r:fieldItems': 'random', 'c:marts': true, 'c:trades': true, 'c:tradeReqToo': true, 'c:eggs': true, 'c:randomEvos': true, 'c:evoLevels': true, 'c:wildHeldItems': true, 'v:shinyStep': '8' },
+    nuzlocke: { 'r:starters': 'similar', 'c:starterNoLeg': true, 'r:wild': 'area', 'c:wildNoLeg': true, 'r:trainers': 'similar', 'c:trainerNoLeg': true, 'c:keepGymTypes': true, 'c:strongTrainers': true, 'c:bossItems': true, 'r:learnsets': 'stab', 'c:firstMoveDamaging': true, 'c:fixTradeEvos': true, 'c:expNormal': true, 'c:earlyCatch': false, 'r:statics': 'similar', 'c:protectStory': true, 'c:catchList': true, 'r:fieldItems': 'random', 'c:marts': true },
+  };
+  document.querySelectorAll('[data-preset]').forEach((b) => b.addEventListener('click', () => {
+    apply(DEFAULTS); apply(PRESETS[b.dataset.preset] || {}); shinyLabel(); saveSettings(); updateOutBox();
+    status(T('Preset "{0}" toegepast.', b.textContent), true);
+  }));
+  const b64e = (str) => btoa(unescape(encodeURIComponent(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const b64d = (str) => decodeURIComponent(escape(atob(str.replace(/-/g, '+').replace(/_/g, '/'))));
+  $('copyCode').addEventListener('click', async () => {
+    const cur = collect(), diff = {}; for (const k in cur) if (cur[k] !== DEFAULTS[k]) diff[k] = cur[k]; diff.seed = $('seed').value;
+    const code = 'PKR1-' + b64e(JSON.stringify(diff));
+    try { await navigator.clipboard.writeText(code); status(T('Instellingencode gekopieerd naar het klembord.'), true); }
+    catch (e) { window.prompt(T('Kopieer deze code:'), code); }
+  });
+  $('pasteCode').addEventListener('click', () => {
+    const code = (window.prompt(T('Plak hier een instellingencode:')) || '').trim(); if (!code) return;
+    try { const s = JSON.parse(b64d(code.replace(/^PKR1-/, ''))); apply(DEFAULTS); apply(s); if (s.seed) $('seed').value = s.seed; shinyLabel(); saveSettings(); updateOutBox(); status(T('Instellingencode geladen.'), true); }
+    catch (e) { status(T('Deze code klopt niet.')); }
+  });
 
   function updateOutBox() {
     $('outBox').style.display = is3ds && game ? '' : 'none';
@@ -194,6 +227,7 @@
           fixTradeEvos: chk('fixTradeEvos'), randomEvos: chk('randomEvos'), monotype: $('monotype').value,
           wildHeldItems: chk('wildHeldItems'), marts: chk('marts'), strongTrainers: chk('strongTrainers'), keepGymTypes: chk('keepGymTypes'), bossItems: chk('bossItems'),
           fieldItems: radio('fieldItems'), keepFieldTMs: chk('keepFieldTMs'),
+          evoLevels: chk('evoLevels'), catchList: chk('catchList'), lang: window.I18N ? I18N.lang : 'nl',
           shinyOdds: SHINY_STEPS[num('shinyStep')] || 4096,
         };
         const log = [];

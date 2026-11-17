@@ -28,7 +28,9 @@ Welke opties je ziet hangt af van de geladen game.
 - **Static encounters & gifts:** legendaries, fossielen, Game Corner-prijzen… Story-legendaries (bv. Kyogre/Groudon, Xerneas/Yveltal, Solgaleo/Lunala) blijven dezelfde soort zodat het verhaal werkt.
 - **Aanvallen:** willekeurige level-up aanvallen (met voorkeur voor eigen type), TM's, TM-compatibiliteit.
 - **Items:** item-balls, verborgen items, NPC-items, Game Corner-prijzen en Poké Marts. Key items blijven op hun plek; een TM wordt altijd een andere TM; basisitems (Poké Balls, Potions…) blijven altijd te koop.
-- **Overige:** in-game trades, daycare-eieren, ruil-evoluties zonder ruilen, willekeurige evoluties, monotype-uitdaging, shiny-kans (tot 1 op 256), XP-rem tegen te snel levelen.
+- **Overige:** in-game trades, daycare-eieren, ruil-evoluties zonder ruilen, willekeurige evoluties en evolutie-levels, monotype-uitdaging, shiny-kans (tot 1 op 256), XP-rem tegen te snel levelen.
+- **Presets & delen:** Klassiek, Chaos, Nuzlocke-vriendelijk met één klik, en een **instellingencode** om exact dezelfde instellingen met iemand te delen.
+- **Waar vang je wat?** De log bevat per Pokémon waar je hem kan vangen of krijgen (wild met levels, gifts, statics, trades).
 
 Een **log** met alle wijzigingen (en de exacte instellingen + seed) kan je downloaden. Met dezelfde seed en instellingen krijg je exact dezelfde ROM.
 

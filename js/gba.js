@@ -318,6 +318,37 @@
       if (seen.size >= 10) game.marts = { slots, commit() { this.slots.forEach((x) => w16(rom, x._o, x.item)); } };
     }
 
+    // ---- Plaatsnamen voor de wilde gebieden (map-header -> regio-sectie -> naam) ----
+    try {
+      const R32 = (o) => r32(rom, o) >>> 0, isP = (v) => v >>> 24 === 8 && (v & 0xFFFFFF) < rom.length;
+      const isHdr = (h) => isP(R32(h)) && isP(R32(h + 4)) && isP(R32(h + 8)) && (R32(h + 12) === 0 || isP(R32(h + 12))) && r16(rom, h + 16) < 0x400;
+      let mg = -1, best = 0;
+      for (let o = 0; o + 64 < Math.min(rom.length, 0x800000); o += 4) {
+        let n = 0; while (n < 40) { const p = R32(o + n * 4); if (!isP(p)) break; const h0 = R32(p & 0xFFFFFF); if (!isP(h0) || !isHdr(h0 & 0xFFFFFF)) break; n++; }
+        if (n >= 20 && n > best) { best = n; mg = o; }
+        if (n >= 20) o += n * 4;
+      }
+      const first = fam === 'FRLG' ? 'PALLET' : 'LITTLEROOT', fr = fam === 'FRLG';
+      let base = -1;
+      const pat = enc3(first);
+      for (let q = find(rom, pat); q >= 0 && base < 0; q = find(rom, pat, q + 1)) {
+        const v = 0x08000000 + q;
+        for (let o = 0; o + 16 < Math.min(rom.length, 0x800000); o += 4) if (R32(o) === v) {
+          const nb = R32(o + (fr ? 4 : 8)); if (isP(nb) && dec3(nb & 0xFFFFFF, 12).startsWith(fr ? 'VIRIDIAN' : 'OLDALE')) { base = fr ? o : o - 4; break; }
+        }
+      }
+      if (mg >= 0 && base >= 0) {
+        const secName = (sec) => { const i = fr ? sec - 0x58 : sec; if (i < 0 || i > 200) return null; const p = R32(fr ? base + i * 4 : base + i * 8 + 4); return isP(p) ? dec3(p & 0xFFFFFF, 30).replace(/\s+/g, ' ').trim() : null; };
+        const nice = (t) => t.toLowerCase().replace(/(^|[ .-])([a-zé])/g, (m, a, c) => a + c.toUpperCase());
+        for (const a of game.wild) {
+          const m = /^Map (\d+)\.(\d+) (\(.*\))$/.exec(a.label); if (!m) continue;
+          const grp = R32(mg + +m[1] * 4); if (!isP(grp)) continue;
+          const h = R32((grp & 0xFFFFFF) + +m[2] * 4); if (!isP(h)) continue;
+          const nmS = secName(rom[(h & 0xFFFFFF) + 0x14]); if (nmS) a.label = nice(nmS) + ' ' + m[3] + ' [' + m[1] + '.' + m[2] + ']';
+        }
+      }
+    } catch (e) { /* namen zijn alleen voor de log */ }
+
     // ---- Starters ----
     game.starters = null;
     const rse = find(rom, '15 01 18 01 1B 01', 0, rom.length, 2);

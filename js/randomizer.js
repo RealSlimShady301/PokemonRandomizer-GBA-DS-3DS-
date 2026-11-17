@@ -13,7 +13,25 @@
 
   function randomize(game, opt, log) {
     const R = U.makeRng(String(opt.seed));
-    const L = (s) => log.push(s);
+    // Log in de taal van de website (Engels: kopjes en vaste zinnen vertaald)
+    const EN = opt.lang === 'en' ? [
+      [/^--- Abilities ---$/, '--- Abilities ---'], [/^--- Basisstats \((.*)\) ---$/, '--- Base stats ($1) ---'],
+      [/^--- Daycare-eieren \(normaal ei -> nieuw ei\) ---$/, '--- Daycare eggs (normal egg -> new egg) ---'], [/^--- Evoluties ---$/, '--- Evolutions ---'],
+      [/^--- In-game trades \(je geeft -> je krijgt\) ---$/, '--- In-game trades (you give -> you get) ---'], [/^--- Items van wilde Pokémon: willekeurig gemaakt ---$/, '--- Items held by wild Pokémon: randomized ---'],
+      [/^--- Level-up aanvallen ---$/, '--- Level-up moves ---'], [/^--- Makkelijker te vangen \(eerste routes, catch rate minstens (\d+)\) ---$/, '--- Easier to catch (first routes, catch rate at least $1) ---'],
+      [/^--- Opmerkingen ---$/, '--- Notes ---'], [/^--- Shiny-kans ---$/, '--- Shiny chance ---'], [/^--- Speciale winkels ---$/, '--- Shops ---'],
+      [/^--- Static encounters & gift-Pokémon ---$/, '--- Static encounters & gift Pokémon ---'], [/^--- Story-legendaries verzwakt ---$/, '--- Story legendaries weakened ---'],
+      [/^--- Types ---$/, '--- Types ---'], [/^--- Veld-items ---$/, '--- Field items ---'], [/^--- Wilde Pokémon ---$/, '--- Wild Pokémon ---'],
+      [/^--- XP-rem: basis-XP gemiddeld (\d+) -> (\d+) \((\d+)% van origineel wild-gemiddelde\) ---$/, '--- XP brake: base XP average $1 -> $2 ($3% of original wild average) ---'],
+      [/^--- Waar vang je wat\? ---$/, '--- Where to catch what ---'], [/^--- Evolutie-levels ---$/, '--- Evolution levels ---'],
+      [/^Instellingen \(om exact dezelfde ROM opnieuw te maken\): /, 'Settings (to recreate exactly the same ROM): '],
+      [/ evolueert nu in /g, ' now evolves into '], [/: ruil -> level 37 /g, ': trade -> level 37 '], [/: ruil met item -> level 37 /g, ': trade with item -> level 37 '],
+      [/: ruil met item -> level stijgen terwijl hij (.*) vasthoudt /g, ': trade with item -> level up while holding $1 '],
+      [/Item-ball /g, 'Item ball '], [/Verborgen item /g, 'Hidden item '], [/Prijs\/ruil /g, 'Prize/exchange '], [/\(normaal 1 op (\d+)\)/g, '(normal 1 in $1)'], [/^1 op (\d+)/, '1 in $1'],
+      [/\(gras\/grot\)/g, '(grass/cave)'], [/Gras groep (\d+) map (\d+)/g, 'Grass group $1 map $2'], [/Water groep (\d+) map (\d+)/g, 'Water group $1 map $2'], [/\(surfen\)/g, '(surfing)'], [/\(vissen\)/g, '(fishing)'], [/\(rotsen\)/g, '(rock smash)'], [/Gebied /g, 'Area '],
+      [/\[belangrijk/g, '[important'], [/, type /g, ', type '], [/ \(was /g, ' (was '], [/^Gift /, 'Gift '], [/ wild: /g, ' wild: '],
+    ] : null;
+    const L = (s) => { if (EN && typeof s === 'string') for (const [rx, rep] of EN) s = s.replace(rx, rep); log.push(s); };
     const sp = game.species;
     const nm = (id) => { const s = game.byId.get(id); return s ? s.name : '#' + id; };
     const bst = (s) => s.stats.reduce((a, b) => a + b, 0) + (s.stats.length === 5 ? s.stats[4] : 0);
@@ -256,7 +274,7 @@
     };
 
     // ---------- Evoluties ----------
-    if (game.evos && (opt.fixTradeEvos || opt.randomEvos)) {
+    if (game.evos && (opt.fixTradeEvos || opt.randomEvos || opt.evoLevels)) {
       const M = game.evos.methods;
       L('--- Evoluties ---');
       if (opt.fixTradeEvos) for (const ev of game.evos.list) {
@@ -274,6 +292,16 @@
           }
         }
         if (changed) ev.commit();
+      }
+      if (opt.evoLevels) { // level-evoluties op een ander level (±30%, tussen 5 en 70)
+        for (const ev of game.evos.list) {
+          let changed = false;
+          for (const e of ev.ent) if (e.method === M.level && e.param > 1 && e.param <= 100) {
+            const was = e.param; e.param = U.clamp(Math.round(was * (0.7 + R.next() * 0.6)), 5, 70); changed = changed || e.param !== was;
+            if (e.param !== was) L(nm(ev.species) + ' -> ' + nm(e.target) + ': level ' + was + ' -> ' + e.param);
+          }
+          if (changed) ev.commit();
+        }
       }
       if (opt.randomEvos) {
         const cands = sp.filter((s) => !isLeg(s));
@@ -511,7 +539,26 @@
       L('--- Shiny-kans ---'); L('1 op ' + o + ' (normaal 1 op ' + (game.shinyBase || 4096) + ')'); L('');
     }
 
-    if (game.warnings.length) { L('--- Opmerkingen ---'); game.warnings.forEach((w) => L('* ' + w)); }
+    // ---------- Overzicht: waar vang je wat? ----------
+    if (opt.catchList !== false && game.wild.length) {
+      const where = new Map();
+      for (const area of game.wild) for (const s of area.slots) {
+        if (!where.has(s.species)) where.set(s.species, new Map());
+        const m = where.get(s.species), k = area.label;
+        const lv = m.get(k) || [999, 0]; lv[0] = Math.min(lv[0], s.min); lv[1] = Math.max(lv[1], s.max); m.set(k, lv);
+      }
+      if (game.statics) for (const st of game.statics) { if (!where.has(st.species)) where.set(st.species, new Map()); where.get(st.species).set((st.kind === 'gift' ? 'Gift' : 'Static') + (st.level ? ' Lv' + st.level : ''), null); }
+      if (game.trades) for (const t of game.trades) { if (!where.has(t.give)) where.set(t.give, new Map()); where.get(t.give).set('Trade (' + nm(t.req) + ')', null); }
+      L('--- Waar vang je wat? ---');
+      const ids = [...where.keys()].sort((a, b) => ((game.byId.get(a) || {}).dex || a) - ((game.byId.get(b) || {}).dex || b));
+      for (const id of ids) {
+        const parts = [...where.get(id)].map(([k, lv]) => (lv && lv[1] ? k + ' Lv' + (lv[0] === lv[1] ? lv[0] : lv[0] + '-' + lv[1]) : k));
+        L(nm(id).padEnd(12) + ' ' + parts.slice(0, 12).join(' · ') + (parts.length > 12 ? ' · (+' + (parts.length - 12) + ')' : ''));
+      }
+      L('');
+    }
+
+    if (game.warnings.length) { L('--- Opmerkingen ---'); game.warnings.forEach((w) => L('* ' + (g.I18N && opt.lang === 'en' ? g.I18N.t(w) : w))); }
     game.finalize();
     return game.rom;
   }

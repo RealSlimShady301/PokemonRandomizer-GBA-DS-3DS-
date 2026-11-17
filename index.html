@@ -56,6 +56,8 @@
   pre { max-height:380px; overflow:auto; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; font-size:12px; display:none; box-shadow:var(--shadow); }
   .tag { display:inline-block; font-size:11px; font-weight:600; padding:1px 8px; border-radius:20px; border:1px solid var(--line); color:var(--muted); margin-left:6px; background:var(--card); vertical-align:middle; }
   @media (max-width:560px) { .grid { grid-template-columns:1fr; } .hero { padding:22px 16px; } h1 { font-size:24px; } main { padding:16px 16px 170px; } .bar { padding:10px 16px !important; } }
+  .presets { margin-top:16px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:10px 16px; box-shadow:var(--shadow); }
+  .presets .row b { margin-right:6px; } .presets button { padding:7px 12px; } .presets .spacer { flex:1; }
 </style>
 </head>
 <body>
@@ -75,6 +77,18 @@
   <div id="drop"><span class="big">📂</span>Sleep je ROM hierheen of <b>klik om te kiezen</b><br><small>.gb .gbc .gba .nds .3ds (ontsleuteld)</small><input type="file" id="file" accept=".gb,.gbc,.gba,.nds,.3ds,.cxi,.bin" hidden></div>
   <div id="romInfo"></div>
 
+  <div class="presets" id="presetBox">
+    <div class="row"><b>Preset</b>
+      <button type="button" class="ghost" data-preset="classic">Klassiek</button>
+      <button type="button" class="ghost" data-preset="chaos">Chaos</button>
+      <button type="button" class="ghost" data-preset="nuzlocke">Nuzlocke-vriendelijk</button>
+      <button type="button" class="ghost" data-preset="reset">Standaard</button>
+      <span class="spacer"></span>
+      <button type="button" class="ghost" id="copyCode">Instellingencode kopiëren</button>
+      <button type="button" class="ghost" id="pasteCode">Code laden</button>
+    </div>
+    <label><input type="checkbox" id="catchList" checked> Overzicht "waar vang je wat?" in de log</label>
+  </div>
   <div class="grid" id="opts">
     <fieldset data-need="species">
       <legend>Pokémon-eigenschappen</legend>
@@ -149,6 +163,7 @@
       <legend>Evoluties</legend>
       <label data-need="tradeevos"><input type="checkbox" id="fixTradeEvos" checked> Ruil-evoluties zonder ruilen (bv. Kadabra, Haunter, Machoke, Graveler)</label>
       <div class="sub">Gewone ruil wordt level 37. Ruil met item: level stijgen terwijl de Pokémon dat item vasthoudt (oudere games: level 37).</div>
+      <label><input type="checkbox" id="evoLevels"> Evolutie-levels willekeurig (ongeveer ±30%)</label>
       <label><input type="checkbox" id="randomEvos"> Willekeurige evoluties (elke Pokémon evolueert in iets anders, iets sterkers)</label>
     </fieldset>
 
@@ -245,14 +260,14 @@
   <pre id="log"></pre>
 </main>
 
-<script src="js/i18n.js?v=20261118d"></script>
-<script src="js/util.js?v=20261118d"></script>
-<script src="js/data.js?v=20261118d"></script>
-<script src="js/gb.js?v=20261118d"></script>
-<script src="js/gba.js?v=20261118d"></script>
-<script src="js/nds.js?v=20261118d"></script>
-<script src="js/ctr.js?v=20261118d"></script>
-<script src="js/randomizer.js?v=20261118d"></script>
-<script src="js/app.js?v=20261118d"></script>
+<script src="js/i18n.js?v=20261118f"></script>
+<script src="js/util.js?v=20261118f"></script>
+<script src="js/data.js?v=20261118f"></script>
+<script src="js/gb.js?v=20261118f"></script>
+<script src="js/gba.js?v=20261118f"></script>
+<script src="js/nds.js?v=20261118f"></script>
+<script src="js/ctr.js?v=20261118f"></script>
+<script src="js/randomizer.js?v=20261118f"></script>
+<script src="js/app.js?v=20261118f"></script>
 </body>
 </html>

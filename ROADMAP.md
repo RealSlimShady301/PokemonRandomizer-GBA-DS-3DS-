@@ -43,15 +43,27 @@ Je levert de **RomFS** van je eigen game (uitgepakt met je eigen console/keys); 
 
 Volgorde: eerst een algemene FlatBuffer-lezer/schrijver en de mod-map-uitvoer, dan Sword/Shield (meeste vrij gedocumenteerde data), daarna de rest.
 
-## 3. Ideeën voor later
+## 3. Nuzlocke-regels (later bekijken)
 
-- **Presets**: "Klassiek", "Chaos", "Nuzlocke-vriendelijk" met één klik.
-- **Instellingencode**: één korte code delen zodat iemand exact dezelfde randomizer krijgt.
-- **"Waar vang ik wat"**: een overzicht per route in de log (zonder de starters te verklappen).
-- **Log in het Engels** (de website is al meertalig; de log nog niet).
+Eerder besproken en toen bewust uitgesteld; om later opnieuw te bekijken:
+- eerste-encounter-per-route bijhouden (op basis van het "waar vang je wat"-overzicht);
+- optionele hulp in de ROM zelf (bv. geen items in gevechten, level caps per badge) of alleen een checklist/tracker op de website;
+- "Nuzlocke-vriendelijk"-preset bestaat al (1-op-1 per gebied, geen legendaries, XP-rem…).
+
+## 4. Ideeën voor later
+
+- **Plaatsnamen** in het "waar vang je wat"-overzicht voor DS- en 3DS-games (nu nog gebiedsnummers; GBA heeft al echte namen).
+- **Log volledig in het Engels** (kopjes en vaste zinnen zijn al vertaald).
 - **Meer talen** voor de website (Duits, Frans, Spaans…): alleen een woordenboek toevoegen in `js/i18n.js`.
 - **Herkennen van een al gerandomizede ROM** met een waarschuwing.
-- **Type per aanval randomizen** (kracht blijft), **evolutie-levels** randomizen.
+- **Type per aanval randomizen** (kracht blijft) — optioneel, want aanvaldata aanpassen was eerder niet gewenst.
 - **Eerste partner**: starter en eerste route-Pokémon aan elkaar gekoppeld.
 - **Speelbaarheidscontrole**: automatisch nagaan dat HM-gebruikers (Cut/Surf/Fly…) vroeg genoeg beschikbaar zijn.
-- **Profielen**: favoriete instellingen per game met een naam bewaren.
+- **Profielen**: eigen presets met een naam bewaren.
+
+## Klaar (uit eerdere ideeën)
+
+- Presets (Klassiek, Chaos, Nuzlocke-vriendelijk, Standaard) en een deelbare **instellingencode**.
+- Overzicht **"waar vang je wat?"** in de log (wild, gifts, statics, trades).
+- **Willekeurige evoluties** en **willekeurige evolutie-levels** op elke game.
+- Website meertalig (Engels/Nederlands).
