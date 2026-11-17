@@ -22,7 +22,7 @@ Bijgehouden zodat dit later nog toegevoegd kan worden. Alles hieronder is **nog 
 
 ## Diamond / Pearl / Platinum
 - Gifts/statics: Eevee, Porygon en de meeste legendaries zijn ingebouwd; Dialga/Palkia op Spear Pillar, Togepi-ei, fossielen en Rotom nog niet (andere scriptvorm).
-- Poké Marts en verborgen items.
+- Poké Marts (lijsten niet gevonden in de code) en verborgen items.
 - Daycare-eieren; Great Marsh-dagelijkse Pokémon; honingbomen.
 - Niet in-game getest: wilde Pokémon, starters, TM's, trades, items in het veld.
 
@@ -45,7 +45,7 @@ Bijgehouden zodat dit later nog toegevoegd kan worden. Alles hieronder is **nog 
 
 ## X / Y
 - Friend Safari; hordes zijn nu 5 verschillende Pokémon.
-- Starternaam in de tekst: zelfde techniek als Sun/Moon, maar niet getest (geen uitgepakte X/Y).
+- Starternaam: Tierno's quiz (lengte/gewicht) blijft over de originele starters gaan; Shauna's opmerking ook.
 - Niet in-game getest: wilde Pokémon, statics, starters, TM's.
 
 ## Omega Ruby / Alpha Sapphire
@@ -53,7 +53,8 @@ Bijgehouden zodat dit later nog toegevoegd kan worden. Alles hieronder is **nog 
 - Niet in-game getest: TM's (nieuw).
 
 ## Sun / Moon / Ultra Sun / Ultra Moon
-- Items in het veld, Poké Marts, daycare-eieren, Z-kristallen, Island Scan, Poké Pelago.
+- Items in het veld (en dus Z-kristallen per categorie) en Poké Marts: uitgezocht maar nog niet gevonden waar de game ze bewaart (niet in de scripttabel zoals in X/Y/ORAS, en niet als vaste velden in de wereld-data).
+- Daycare-eieren, Island Scan, Poké Pelago.
 - Starternaam + type in de keuze-tekst van Kukui zijn ingebouwd; daarvoor wordt de verhaaltekst van een andere taal vervangen door Engels als de tekst groter wordt.
 - Wilde Pokémon: in sommige gebieden past "elk slot apart" niet; daar wordt elke soort door één vaste willekeurige soort vervangen (de log kan daar afwijken).
 - Niet in-game getest (alles), incl. de Ultra Necrozma-cutscene (Necrozma blijft Necrozma).
