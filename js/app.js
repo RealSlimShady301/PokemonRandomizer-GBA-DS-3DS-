@@ -1,5 +1,6 @@
 // UI-koppeling
 (function () {
+  const T = (x, ...a) => (window.I18N ? I18N.t(x, ...a) : x);
   const $ = (id) => document.getElementById(id);
   let original = null, srcFile = null, is3ds = false, fileName = '', game = null, lastLog = '', helper = false;
   const fileReader = (f) => ({ size: f.size, read: async (off, len) => new Uint8Array(await f.slice(off, off + len).arrayBuffer()) });
@@ -61,29 +62,29 @@
     $('ftpLabel').style.opacity = helper ? 1 : 0.5;
     if (!helper && ftpRadio.checked) document.querySelector('input[name=out][value=rom]').checked = true;
     $('ftpRow').style.display = helper && ftpRadio.checked ? '' : 'none';
-    $('ftpHint').textContent = helper ? '' : 'Rechtstreeks sturen werkt alleen als je de app opent via start.bat.';
-    $('tidInfo').textContent = game && game.titleId ? 'Title ID: ' + game.titleId + ' — LayeredFS-map: luma/titles/' + game.titleId + '/' : '';
-    $('go').textContent = !is3ds ? 'Randomize & download' : { rom: 'Randomize & download .3ds', layeredfs: 'Randomize & download zip', ftp: 'Randomize & stuur naar 3DS' }[radio('out')];
+    $('ftpHint').textContent = helper ? '' : T('Rechtstreeks sturen werkt alleen als je de app opent via start.bat.');
+    $('tidInfo').textContent = game && game.titleId ? T('Title ID: {0} — LayeredFS-map: luma/titles/{0}/', game.titleId) : '';
+    $('go').textContent = T(!is3ds ? 'Randomize & download' : { rom: 'Randomize & download .3ds', layeredfs: 'Randomize & download zip', ftp: 'Randomize & stuur naar 3DS' }[radio('out')]);
   }
 
   async function loadFile(f) {
-    status('ROM inlezen…');
+    status(T('ROM inlezen…'));
     fileName = f.name; srcFile = f;
     is3ds = await CTR.detect(fileReader(f)) > 0;
     original = is3ds ? null : new Uint8Array(await f.arrayBuffer());
     setTimeout(async () => {
       try {
-        if (is3ds) status('3DS-ROM analyseren (kan even duren)…');
+        if (is3ds) status(T('3DS-ROM analyseren (kan even duren)…'));
         game = is3ds ? await CTR.load(fileReader(f)) : Randomizer.detectAndLoad(original.slice());
-        $('monotype').innerHTML = '<option value="">Uit</option>' + game.typeNames.map((t) => '<option>' + t + '</option>').join('');
+        $('monotype').innerHTML = '<option value="">' + T('Uit') + '</option>' + game.typeNames.map((t) => '<option>' + t + '</option>').join('');
         const restored = loadSettings(); shinyLabel(); setupStarterList();
         showInfo(); updateOutBox();
         $('go').disabled = false; $('again').disabled = false;
-        status(restored ? 'Je vorige instellingen voor deze game zijn teruggezet.' : '', restored);
+        status(restored ? T('Je vorige instellingen voor deze game zijn teruggezet.') : '', restored);
       } catch (err) {
         game = null; $('go').disabled = true; $('again').disabled = true; updateOutBox(); setupStarterList();
         $('romInfo').style.display = 'block';
-        $('romInfo').innerHTML = '<b>Kan deze ROM niet gebruiken.</b><br>' + err.message;
+        $('romInfo').innerHTML = '<b>' + T('Kan deze ROM niet gebruiken.') + '</b><br>' + T(err.message);
         status('');
       }
     }, 20);
@@ -98,17 +99,17 @@
       story: !!(game.statics && game.statics.some((st) => st.story)), tradeevos: !!(game.evos && game.evos.list.some((e) => e.ent.some((x) => [...game.evos.methods.trade, ...game.evos.methods.tradeItem, ...game.evos.methods.tradeSpecies].includes(x.method)))),
     };
     document.querySelectorAll('[data-need]').forEach((el) => el.classList.toggle('off', !has[el.dataset.need]));
-    $('starterNote').textContent = game.starters && game.starters.experimental ? 'Experimenteel voor deze game.' : '';
+    $('starterNote').textContent = game.starters && game.starters.experimental ? T('Experimenteel voor deze game.') : '';
     $('romInfo').style.display = 'block';
     $('romInfo').innerHTML = '<b>' + game.name + '</b> — Gen ' + game.gen + ', ' + game.platform +
-      '<br>' + game.species.length + ' Pokémon · ' + game.wild.length + ' wilde gebieden · ' + game.trainers.length + ' trainers · ' +
-      game.learnsets.size + ' leersets' + (game.starters ? ' · starters gevonden' : '') +
-      (game.warnings.length ? '<div class="warn">' + game.warnings.map((w) => '• ' + w).join('<br>') + '</div>' : '');
+      '<br>' + game.species.length + ' Pokémon · ' + game.wild.length + ' ' + T('wilde gebieden') + ' · ' + game.trainers.length + ' trainers · ' +
+      game.learnsets.size + ' ' + T('leersets') + (game.starters ? ' · ' + T('starters gevonden') : '') +
+      (game.warnings.length ? '<div class="warn">' + game.warnings.map((w) => '• ' + T(w)).join('<br>') + '</div>' : '');
   }
 
   // Shiny-schuifbalk: stappen van 1 op 4096 (normaal) tot 1 op 256
   const SHINY_STEPS = [4096, 3072, 2048, 1536, 1024, 768, 512, 384, 256];
-  const shinyLabel = () => { const o = SHINY_STEPS[num('shinyStep')] || 4096; $('shinyLabel').textContent = '1 op ' + o + (o === 4096 ? ' (normaal)' : ''); };
+  const shinyLabel = () => { const o = SHINY_STEPS[num('shinyStep')] || 4096; $('shinyLabel').textContent = T('1 op {0}', o) + (o === 4096 ? ' ' + T('(normaal)') : ''); };
   $('shinyStep').addEventListener('input', shinyLabel);
 
   const radio = (n) => document.querySelector('input[name=' + n + ']:checked').value;
@@ -127,7 +128,7 @@
   function setupStarterList() {
     pkList = game ? game.species.slice().sort((a, b) => a.dex - b.dex).map((s) => ({ name: s.name, dex: s.dex })) : [];
     ['cs0', 'cs1', 'cs2'].forEach(validateCs);
-    $('csHint').textContent = game ? 'Typ een letter en kies uit de lijst (' + pkList.length + ' Pokémon in deze game).' : 'Laad eerst een ROM; daarna typ je een letter en kies je uit de lijst.';
+    $('csHint').textContent = game ? T('Typ een letter en kies uit de lijst ({0} Pokémon in deze game).', pkList.length) : T('Laad eerst een ROM; daarna typ je een letter en kies je uit de lijst.');
   }
   document.querySelectorAll('.ac').forEach((box) => {
     const inp = box.querySelector('input'), ul = box.querySelector('.acList');
@@ -169,13 +170,13 @@
     if (radio('starters') === 'custom') {
       for (const [i, id] of ['cs0', 'cs1', 'cs2'].entries()) {
         const v = $(id).value.trim();
-        if (!v) { status('Fout: vul starter ' + (i + 1) + ' in (of kies een andere starter-optie).'); $(id).focus(); return; }
-        if (!validateCs(id)) { status('Fout: "' + v + '" zit niet in deze game. Kies starter ' + (i + 1) + ' uit de lijst.'); $(id).focus(); return; }
+        if (!v) { status(T('Fout: vul starter {0} in (of kies een andere starter-optie).', i + 1)); $(id).focus(); return; }
+        if (!validateCs(id)) { status(T('Fout: "{0}" zit niet in deze game. Kies starter {1} uit de lijst.', v, i + 1)); $(id).focus(); return; }
       }
     }
     saveSettings();
     $('go').disabled = $('again').disabled = true;
-    status('Bezig met randomizen…');
+    status(T('Bezig met randomizen…'));
     setTimeout(async () => {
       try {
         const g = is3ds ? await CTR.load(fileReader(srcFile)) : Randomizer.detectAndLoad(original.slice()); // altijd vanaf het origineel
@@ -201,14 +202,14 @@
         const dot = fileName.lastIndexOf('.');
         const base = dot > 0 ? fileName.slice(0, dot) : fileName, ext = dot > 0 ? fileName.slice(dot) : '';
         const runName = base + '_random_' + opt.seed;
-        let done = 'Klaar! Gerandomizede ROM gedownload.';
+        let done = T('Klaar! Gerandomizede ROM gedownload.');
         if (is3ds) {
           const mode = radio('out');
           // Shiny-kans: zit bij .3ds in de ROM zelf; bij LayeredFS/wifi als code.ips (leeg = normaal, overschrijft een oude patch)
           const shinyIps = await g.codeIps();
           const ipsPath = 'luma/titles/' + g.titleId + '/code.ips';
           if (mode === 'rom') {
-            status('Hashes herberekenen…');
+            status(T('Hashes herberekenen…'));
             const patches = (await g.buildPatches()).sort((a, b) => a.off - b.off);
             const parts = []; let pos = 0;
             for (const p of patches) {
@@ -227,21 +228,21 @@
               'Zet in de Luma3DS-instellingen (SELECT ingedrukt houden bij het opstarten) "Enable game patching" aan.\r\n' +
               'Terug naar het origineel: verwijder de map luma/titles/' + g.titleId + '/romfs\r\nSeed: ' + opt.seed + '\r\n') });
             download(U.zip(files), runName + '_LayeredFS.zip');
-            done = 'Klaar! LayeredFS-zip gedownload.';
+            done = T('Klaar! LayeredFS-zip gedownload.');
           } else {
             const host = $('ftpHost').value.trim(), port = num('ftpPort') || 5000;
-            if (!host) throw new Error('Vul het IP-adres van je 3DS in (staat bovenaan in FTPD).');
-            status('Versturen naar 3DS (' + host + ')…');
+            if (!host) throw new Error(T('Vul het IP-adres van je 3DS in (staat bovenaan in FTPD).'));
+            status(T('Versturen naar 3DS ({0})…', host));
             const files = (await g.layeredFsFiles()).concat([{ path: ipsPath, data: shinyIps }]).map((f) => ({ path: f.path, b64: U.toBase64(f.data) }));
             const res = await (await fetch('/api/ftp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ host, port, files }) })).json();
             if (!res.ok) throw new Error(res.error);
-            done = 'Klaar! ' + res.sent.length + ' bestanden op je 3DS gezet. Sluit FTPD en start het spel.';
+            done = T('Klaar! {0} bestanden op je 3DS gezet. Sluit FTPD en start het spel.', res.sent.length);
           }
         } else download(out, runName + ext);
         $('log').textContent = lastLog; $('log').style.display = 'block'; $('logBtn').style.display = '';
         $('logBtn').onclick = () => download(new TextEncoder().encode(lastLog), runName + '_log.txt');
         status(done, true);
-      } catch (err) { console.error(err); status('Fout: ' + err.message); }
+      } catch (err) { console.error(err); status(T('Fout: {0}', T(err.message))); }
       $('go').disabled = $('again').disabled = false;
     }, 20);
   };
@@ -250,5 +251,12 @@
     const url = URL.createObjectURL(bytes instanceof Blob ? bytes : new Blob([bytes]));
     const a = document.createElement('a'); a.href = url; a.download = name; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+  // ---- Taal: automatisch (browsertaal, standaard Engels) + keuzelijst ----
+  if (window.I18N) {
+    const sel = $('langSel');
+    if (sel) { sel.innerHTML = Object.entries(I18N.LANGS).map(([k, v]) => '<option value="' + k + '">' + v + '</option>').join(''); sel.value = I18N.lang; sel.onchange = () => I18N.setLang(sel.value); }
+    I18N.onChange = () => { if (sel) sel.value = I18N.lang; shinyLabel(); setupStarterList(); updateOutBox(); if (game) showInfo(); };
+    I18N.translatePage(); shinyLabel(); setupStarterList(); updateOutBox();
   }
 })();

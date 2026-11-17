@@ -5,7 +5,10 @@
     if ((gen = NDS.detect(rom))) return NDS.load(rom);
     if ((gen = GBA.detect(rom))) return GBA.load(rom);
     if ((gen = GB.detect(rom))) return GB.load(rom, gen);
-    throw new Error('Onbekende ROM. Ondersteund: Pokémon Gen 1-5 (GB, GBC, GBA, NDS) en hacks die daarop gebaseerd zijn.');
+    // Mystery Dungeon (DS/GBA): herkend, maar nog niet ondersteund (zie ROADMAP.md)
+    const code = rom.length > 0x10 ? String.fromCharCode(rom[0x0C], rom[0x0D], rom[0x0E]) : '', gbaCode = rom.length > 0xB0 ? String.fromCharCode(rom[0xAC], rom[0xAD], rom[0xAE]) : '';
+    if (['C2S', 'YFT', 'YFY', 'APH'].includes(code) || gbaCode === 'B24') throw new Error('Pokémon Mystery Dungeon wordt herkend, maar kan nog niet gerandomized worden (gepland).');
+    throw new Error('Onbekende ROM. Ondersteund: Pokémon Gen 1-7 (GB, GBC, GBA, DS, 3DS) en hacks die daarop gebaseerd zijn.');
   }
 
   function randomize(game, opt, log) {

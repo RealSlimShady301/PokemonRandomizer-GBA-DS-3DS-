@@ -2,7 +2,7 @@
 
 A Pokémon ROM randomizer that runs **entirely in your browser**. You load your own ROM, you only see the options that work for that game, and you download a randomized ROM. Nothing is uploaded anywhere.
 
-> Nederlandstalige interface. ROMs worden **niet** meegeleverd: gebruik je eigen, legaal gedumpte games.
+> De interface is meertalig (standaard Engels, ook Nederlands; automatisch volgens je browsertaal). ROMs worden **niet** meegeleverd: gebruik je eigen, legaal gedumpte games.
 
 ---
 
@@ -60,9 +60,13 @@ js/util.js        hulpfuncties, seeded RNG, zip
 server.py         lokale server + FTP-upload naar de 3DS
 start.bat         start de server en opent de pagina
 NOG_TE_DOEN.md    wat nog niet ingebouwd of getest is
+ROADMAP.md        plannen: Mystery Dungeon, Switch-games, ideeën
+js/i18n.js        vertalingen van de website
 ```
 
 ## Status
+
+Plannen voor Mystery Dungeon en de Switch-games staan in **[ROADMAP.md](ROADMAP.md)**.
 
 Alles is getest op echte ROMs (dat de ROM correct wordt aangepast en de checksums kloppen), maar nog niet alles is in-game uitgespeeld. Wat nog ontbreekt of nog niet getest is staat in **[NOG_TE_DOEN.md](NOG_TE_DOEN.md)**.
 
