@@ -1,0 +1,15 @@
+# ROMs en archieven nooit in de repository (auteursrecht + grootte)
+*.gb
+*.gbc
+*.gba
+*.nds
+*.3ds
+*.cia
+*.cxi
+*.zip
+*.7z
+*.rar
+Pokemon_ HeartGold Version/
+_uitgepakt/
+*_log.txt
+*.ips

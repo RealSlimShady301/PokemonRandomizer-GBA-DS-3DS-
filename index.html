@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pokémon ROM Randomizer</title>
+<style>
+  :root { color-scheme:light dark; --bg:#f3f1ec; --bg2:#ebe7de; --card:#ffffff; --ink:#1b1a18; --muted:#6c675e; --line:#e3ddd1; --acc:#d6322b; --acc-ink:#fff; --acc2:#2f63d6; --ok:#23804a; --shadow:0 1px 2px rgba(30,25,15,.06), 0 6px 20px rgba(30,25,15,.06); }
+  @media (prefers-color-scheme: dark) { :root { --bg:#121316; --bg2:#1a1c20; --card:#1d1f24; --ink:#eceae6; --muted:#9d998f; --line:#2e3138; --acc:#ef5148; --acc2:#7aa2ff; --ok:#5cc489; --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.25); } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif; }
+  header { background:linear-gradient(135deg, #d6322b 0%, #9e1f19 100%); color:#fff; }
+  .hero { max-width:1180px; margin:auto; padding:30px 20px 26px; display:flex; gap:18px; align-items:center; }
+  .ball { width:54px; height:54px; flex:none; border-radius:50%; background:linear-gradient(to bottom, #fff 0 46%, #1b1a18 46% 54%, #fff 54%); border:4px solid #1b1a18; position:relative; box-shadow:0 4px 14px rgba(0,0,0,.25); }
+  .ball::after { content:""; position:absolute; left:50%; top:50%; width:18px; height:18px; margin:-9px 0 0 -9px; border-radius:50%; background:#fff; border:4px solid #1b1a18; }
+  h1 { margin:0; font-size:30px; letter-spacing:-.5px; font-weight:750; }
+  .hero p { margin:4px 0 0; opacity:.92; max-width:780px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .chips span { font-size:12px; padding:2px 9px; border-radius:20px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.28); }
+  main { max-width:1180px; margin:auto; padding:20px 20px 120px; }
+  .steps { display:flex; gap:10px; margin:0 0 14px; flex-wrap:wrap; }
+  .steps div { display:flex; align-items:center; gap:8px; color:var(--muted); font-weight:600; font-size:14px; }
+  .steps b { display:inline-grid; place-items:center; width:24px; height:24px; border-radius:50%; background:var(--bg2); color:var(--ink); font-size:13px; }
+  .steps div + div::before { content:""; width:28px; height:2px; background:var(--line); margin-right:4px; }
+  #drop { border:2px dashed var(--line); border-radius:16px; padding:34px 20px; text-align:center; background:var(--card); cursor:pointer; transition:.15s; box-shadow:var(--shadow); }
+  #drop:hover, #drop.hover { border-color:var(--acc2); }
+  #drop b { color:var(--acc2); } #drop .big { font-size:34px; display:block; margin-bottom:6px; }
+  #romInfo { margin-top:12px; padding:14px 16px; border-radius:14px; background:var(--card); border:1px solid var(--line); border-left:5px solid var(--ok); display:none; box-shadow:var(--shadow); }
+  #romInfo .warn { color:var(--muted); font-size:13px; margin-top:6px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(330px, 1fr)); gap:16px; margin-top:18px; align-items:start; }
+  fieldset { border:1px solid var(--line); border-radius:14px; background:var(--card); padding:0 18px 14px; margin:0; box-shadow:var(--shadow); min-width:0; }
+  fieldset.off, [data-need].off { display:none !important; }
+  legend { float:left; width:calc(100% + 36px); margin:0 -18px 8px; padding:12px 18px; font-weight:700; font-size:15.5px; border-bottom:1px solid var(--line); background:var(--bg2); border-radius:14px 14px 0 0; }
+  legend + * { clear:both; }
+  fieldset > b, fieldset div > b { display:block; margin:12px 0 2px; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+  label { display:flex; gap:8px; align-items:flex-start; margin:6px 0; cursor:pointer; }
+  label input { margin-top:3px; accent-color:var(--acc); flex:none; }
+  .sub { margin-left:24px; color:var(--muted); font-size:14px; }
+  input[type=number], select { width:80px; padding:5px 7px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); font:inherit; }
+  select { width:auto; }
+  input[type=text] { width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); font:inherit; }
+  input[type=range] { accent-color:var(--acc); }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:6px 0; }
+  .bar { position:fixed; left:0; right:0; bottom:0; z-index:30; margin:0 !important; border-radius:0 !important; padding:12px max(20px, calc((100% - 1140px) / 2)) !important; display:flex; gap:12px; align-items:center; flex-wrap:wrap; background:var(--card) !important; border:0 !important; border-top:1px solid var(--line) !important; box-shadow:0 -6px 20px rgba(0,0,0,.08); }
+  button { font:inherit; border:0; border-radius:10px; padding:10px 18px; cursor:pointer; transition:.12s; }
+  #go { background:var(--acc); color:var(--acc-ink); font-weight:700; padding:11px 28px; }
+  #go:hover:not(:disabled) { filter:brightness(1.08); } #go:disabled { opacity:.4; cursor:default; }
+  .ghost { background:transparent; border:1px solid var(--line); color:var(--ink); } .ghost:hover:not(:disabled) { border-color:var(--acc2); }
+  .ghost:disabled { opacity:.45; cursor:default; }
+  #status { color:var(--muted); } #status.ok { color:var(--ok); font-weight:600; }
+  .ac { position:relative; flex:1; min-width:0; }
+  .ac input.bad { border-color:var(--acc); } .ac input.good { border-color:var(--ok); }
+  .acList { display:none; position:absolute; z-index:20; left:0; right:0; top:100%; margin:2px 0 0; padding:4px 0; list-style:none; max-height:220px; overflow:auto; background:var(--card); border:1px solid var(--line); border-radius:10px; box-shadow:0 8px 22px rgba(0,0,0,.2); color:var(--ink); }
+  .acList li { padding:5px 10px; cursor:pointer; white-space:nowrap; } .acList li small { color:var(--muted); margin-right:6px; }
+  .acList li.on, .acList li:hover { background:var(--acc2); color:#fff; } .acList li.on small, .acList li:hover small { color:#fff; }
+  pre { max-height:380px; overflow:auto; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; font-size:12px; display:none; box-shadow:var(--shadow); }
+  .tag { display:inline-block; font-size:11px; font-weight:600; padding:1px 8px; border-radius:20px; border:1px solid var(--line); color:var(--muted); margin-left:6px; background:var(--card); vertical-align:middle; }
+  @media (max-width:560px) { .grid { grid-template-columns:1fr; } .hero { padding:22px 16px; } h1 { font-size:24px; } main { padding:16px 16px 170px; } .bar { padding:10px 16px !important; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="hero">
+    <div class="ball" aria-hidden="true"></div>
+    <div>
+      <h1>Pokémon ROM Randomizer</h1>
+      <p>Alles draait lokaal in je browser: je ROM wordt nergens heen gestuurd. Laad een ROM en je ziet alleen de opties die voor die game werken.</p>
+      <div class="chips"><span>Game Boy</span><span>Game Boy Color</span><span>GBA</span><span>Nintendo DS</span><span>3DS: X/Y · ORAS · Sun/Moon · Ultra Sun/Moon</span></div>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="steps"><div><b>1</b> ROM kiezen</div><div><b>2</b> Opties instellen</div><div><b>3</b> Randomizen</div></div>
+  <div id="drop"><span class="big">📂</span>Sleep je ROM hierheen of <b>klik om te kiezen</b><br><small>.gb .gbc .gba .nds .3ds (ontsleuteld)</small><input type="file" id="file" accept=".gb,.gbc,.gba,.nds,.3ds,.cxi,.bin" hidden></div>
+  <div id="romInfo"></div>
+
+  <div class="grid" id="opts">
+    <fieldset data-need="species">
+      <legend>Pokémon-eigenschappen</legend>
+      <b>Basisstats</b>
+      <label><input type="radio" name="stats" value="keep" checked> Ongewijzigd</label>
+      <label><input type="radio" name="stats" value="shuffle"> Husselen (zelfde getallen, andere volgorde)</label>
+      <label><input type="radio" name="stats" value="random"> Willekeurig (zelfde totaal / BST)</label>
+      <b>Types</b>
+      <label><input type="radio" name="types" value="keep" checked> Ongewijzigd</label>
+      <label><input type="radio" name="types" value="random"> Willekeurig (enkel/dubbel blijft gelijk)</label>
+      <label><input type="radio" name="types" value="chaos"> Volledig willekeurig</label>
+      <div data-need="abilities">
+        <b>Abilities</b> <span class="tag">Gen 3+</span>
+        <label><input type="checkbox" id="abilities"> Abilities randomizen</label>
+        <label class="sub"><input type="checkbox" id="banWonderGuard" checked> Geen Wonder Guard</label>
+        <label class="sub"><input type="checkbox" id="banBadAbilities" checked> Geen Truant / Slow Start / Defeatist</label>
+      </div>
+      <b>Extra</b>
+      <label><input type="checkbox" id="maxCatch"> Alles makkelijk te vangen (catch rate 255)</label>
+      <label><input type="checkbox" id="fastGrowth"> Iedereen "Fast" XP-groei</label>
+      <label data-need="baseexp"><input type="checkbox" id="expNormal"> XP-rem: basis-XP gelijk aan het originele spel (tegen te snel levelen door random Pokémon)</label>
+      <div class="row" data-need="baseexp">XP-hoeveelheid <input type="number" id="expPct" value="100" min="10" max="300" step="5"> %</div>
+      <label data-need="helditems"><input type="checkbox" id="wildHeldItems" checked> Items die wilde Pokémon vasthouden randomizen</label>
+    </fieldset>
+
+    <fieldset data-need="starters">
+      <legend>Starters</legend>
+      <label><input type="radio" name="starters" value="keep" checked> Ongewijzigd</label>
+      <label><input type="radio" name="starters" value="random"> Willekeurig</label>
+      <label><input type="radio" name="starters" value="similar"> Willekeurig, vergelijkbare sterkte</label>
+      <label><input type="radio" name="starters" value="custom"> Zelf kiezen:</label>
+      <div class="row sub" style="flex-direction:column;align-items:stretch;gap:6px">
+        <div class="ac"><input type="text" id="cs0" placeholder="Starter 1" autocomplete="off"><ul class="acList"></ul></div>
+        <div class="ac"><input type="text" id="cs1" placeholder="Starter 2" autocomplete="off"><ul class="acList"></ul></div>
+        <div class="ac"><input type="text" id="cs2" placeholder="Starter 3" autocomplete="off"><ul class="acList"></ul></div>
+      </div>
+      <div class="sub" id="csHint">Laad eerst een ROM; daarna typ je een letter en kies je uit de lijst.</div>
+      <label><input type="checkbox" id="starterNoLeg" checked> Geen legendaries</label>
+      <div id="starterNote" class="sub"></div>
+    </fieldset>
+
+    <fieldset data-need="statics">
+      <legend>Static encounters &amp; gift-Pokémon</legend>
+      <label><input type="radio" name="statics" value="keep" checked> Ongewijzigd</label>
+      <label><input type="radio" name="statics" value="random"> Willekeurig</label>
+      <label><input type="radio" name="statics" value="similar"> Willekeurig, vergelijkbare sterkte</label>
+      <label><input type="checkbox" id="staticLegSwap" checked> Legendaries alleen door legendaries vervangen</label>
+      <label data-need="story"><input type="checkbox" id="protectStory" checked> Story-encounters beschermen (Kyogre, Groudon, Rayquaza, Deoxys blijven; Birch's Poochyena alleen vergelijkbare sterkte)</label>
+      <label class="sub" data-need="story"><input type="checkbox" id="weakenStory"> Story-legendaries wel verzwakken: andere, zwakkere aanvallen en een zwakke ability</label>
+      <label><input type="checkbox" id="giftsToo" checked> Gift-Pokémon ook (fossielen, Castform, Beldum, Latios/Latias…)</label>
+      <div class="sub">Bv. de Poochyena die Prof. Birch aanvalt, Kyogre/Groudon, de Regi's, Voltorb, Kecleon.</div>
+    </fieldset>
+
+    <fieldset data-need="fielditems">
+      <legend>Items in het veld &amp; winkels</legend>
+      <label><input type="radio" name="fieldItems" value="keep" checked> Ongewijzigd</label>
+      <label><input type="radio" name="fieldItems" value="shuffle"> Husselen (dezelfde items, op andere plekken)</label>
+      <label><input type="radio" name="fieldItems" value="random"> Willekeurig: een TM wordt een andere TM, een item een ander item</label>
+      <label data-need="fielditems"><input type="checkbox" id="keepFieldTMs"> TM's op hun originele plek laten</label>
+      <label data-need="marts"><input type="checkbox" id="marts"> Speciale winkels randomizen (de gewone Poké Mart per badge blijft hetzelfde)</label>
+      <div class="sub">Item-balls en verborgen items. Key items en HM's liggen niet in deze lijst, dus je kan niet vast komen te zitten.</div>
+    </fieldset>
+
+    <fieldset data-need="shiny">
+      <legend>Shiny-kans</legend>
+      <input type="range" id="shinyStep" min="0" max="8" step="1" value="0" style="width:100%">
+      <div class="row" style="justify-content:space-between"><span>1 op 4096 (normaal)</span><b id="shinyLabel">1 op 4096</b><span>1 op 256</span></div>
+      <div class="sub">Wordt rechtstreeks in de ROM gezet (en als code.ips bij LayeredFS / wifi).</div>
+    </fieldset>
+
+    <fieldset data-need="evos">
+      <legend>Evoluties</legend>
+      <label data-need="tradeevos"><input type="checkbox" id="fixTradeEvos" checked> Ruil-evoluties zonder ruilen (bv. Kadabra, Haunter, Machoke, Graveler)</label>
+      <div class="sub">Gewone ruil wordt level 37. Ruil met item: level stijgen terwijl de Pokémon dat item vasthoudt (oudere games: level 37).</div>
+      <label><input type="checkbox" id="randomEvos"> Willekeurige evoluties (elke Pokémon evolueert in iets anders, iets sterkers)</label>
+    </fieldset>
+
+    <fieldset data-need="species">
+      <legend>Monotype-uitdaging</legend>
+      <div class="row">Type <select id="monotype"><option value="">Uit</option></select></div>
+      <div class="sub">Alle Pokémon die je kan krijgen (wild, starters, gifts, trades, eieren) zijn van dit type. Trainers niet.</div>
+    </fieldset>
+
+    <fieldset data-need="eggs">
+      <legend>Daycare-eieren <span class="tag">optioneel</span></legend>
+      <label><input type="checkbox" id="eggs"> Eieren uit de daycare randomizen</label>
+      <div class="sub">Dezelfde evolutielijn geeft altijd hetzelfde (willekeurige) ei. Welke Pokémon samen kunnen breeden verandert niet.</div>
+      <label class="sub"><input type="checkbox" id="eggBasic" checked> Alleen basisvormen (zoals echte eieren, bv. Charmander maar geen Charizard)</label>
+      <label class="sub"><input type="checkbox" id="eggNoLeg" checked> Geen legendaries uit eieren</label>
+    </fieldset>
+
+    <fieldset data-need="trades">
+      <legend>In-game trades</legend>
+      <label><input type="checkbox" id="trades"> Trades randomizen (je krijgt een willekeurige Pokémon)</label>
+      <label class="sub"><input type="checkbox" id="tradeReqToo" checked> Ze vragen ook iets willekeurigs (iets dat in het wild te vangen is)</label>
+      <label class="sub"><input type="checkbox" id="tradeNoLeg" checked> Geen legendaries</label>
+    </fieldset>
+
+    <fieldset data-need="wild">
+      <legend>Wilde Pokémon</legend>
+      <label><input type="radio" name="wild" value="keep" checked> Ongewijzigd</label>
+      <label><input type="radio" name="wild" value="random"> Volledig willekeurig per slot</label>
+      <label><input type="radio" name="wild" value="similar"> Willekeurig, vergelijkbare sterkte</label>
+      <label><input type="radio" name="wild" value="progressive"> Groeit mee: zwakke Pokémon op de eerste routes, sterke later (volgens level)</label>
+      <label><input type="radio" name="wild" value="area"> Per gebied 1-op-1 vervangen</label>
+      <label><input type="radio" name="wild" value="global"> Overal 1-op-1 (elke soort krijgt één vaste vervanger)</label>
+      <label><input type="checkbox" id="wildNoLeg" checked> Geen legendaries</label>
+      <label data-need="wild"><input type="checkbox" id="earlyCatch"> Eerste routes: eigen Pokémon die makkelijker te vangen zijn (ook legendaries)</label>
+      <div class="row">t/m level <input type="number" id="earlyCatchLevel" value="8" min="2" max="30"> · catch rate minstens <input type="number" id="earlyCatchRate" value="100" min="3" max="255"></div>
+      <div class="row">Levels <input type="number" id="wildLevel" value="0" min="-50" max="200" step="5"> % hoger</div>
+    </fieldset>
+
+    <fieldset data-need="trainers">
+      <legend>Trainers</legend>
+      <label><input type="radio" name="trainers" value="keep" checked> Ongewijzigd</label>
+      <label><input type="radio" name="trainers" value="random"> Volledig willekeurig</label>
+      <label><input type="radio" name="trainers" value="similar"> Willekeurig, vergelijkbare sterkte</label>
+      <label><input type="radio" name="trainers" value="theme"> Type-thema per trainer (vergelijkbare sterkte)</label>
+      <label><input type="radio" name="trainers" value="progressive"> Progressieve moeilijkheid (hoe verder in het spel, hoe sterker)</label>
+      <label><input type="checkbox" id="trainerNoLeg" checked> Geen legendaries</label>
+      <div class="row">Levels <input type="number" id="trainerLevel" value="0" min="-50" max="200" step="5"> % hoger</div>
+      <label data-need="important"><input type="checkbox" id="keepGymTypes" checked> Gym leaders &amp; Elite Four behouden hun type (bv. Roxanne blijft Rock)</label>
+      <label data-need="trainers"><input type="checkbox" id="trainerBetter"> Betere trainer-Pokémon (sterker per level) en slimmere movesets</label>
+      <label data-need="strong"><input type="checkbox" id="strongTrainers"> Sterkere trainers: slimme AI + perfecte IV's</label>
+      <label data-need="bag"><input type="checkbox" id="bossItems"> Gym leaders, Elite Four &amp; rivalen: Full Restores/Hyper Potions + sterke held items</label>
+      <div class="sub">Trainers met eigen aanvallen krijgen automatisch passende aanvallen.</div>
+    </fieldset>
+
+    <fieldset data-need="learnsets">
+      <legend>Aanvallen</legend>
+      <b>Level-up aanvallen</b>
+      <label><input type="radio" name="learnsets" value="keep" checked> Ongewijzigd</label>
+      <label><input type="radio" name="learnsets" value="random"> Willekeurig</label>
+      <label><input type="radio" name="learnsets" value="stab"> Willekeurig, voorkeur voor eigen type</label>
+      <label><input type="radio" name="learnsets" value="type"> Alleen aanvallen van eigen type (sterker per level)</label>
+      <label><input type="checkbox" id="firstMoveDamaging" checked> Eerste aanval doet altijd schade</label>
+      <label><input type="checkbox" id="noHmInLearnset" checked> Geen HM-aanvallen in level-up lijst</label>
+      <div data-need="tms">
+        <b>TM's</b>
+        <label><input type="checkbox" id="tms"> TM-aanvallen randomizen (HM's blijven)</label>
+      </div>
+      <div data-need="tmcompat">
+        <b>TM-compatibiliteit</b> <span class="tag">Gen 1-2</span>
+        <label><input type="radio" name="tmCompat" value="keep" checked> Ongewijzigd</label>
+        <label><input type="radio" name="tmCompat" value="random"> Willekeurig, kans <input type="number" id="tmCompatPct" value="50" min="0" max="100">%</label>
+        <label><input type="radio" name="tmCompat" value="full"> Iedereen leert elke TM</label>
+      </div>
+    </fieldset>
+  </div>
+
+  <fieldset id="outBox" style="display:none;margin-top:14px">
+    <legend>Uitvoer (3DS)</legend>
+    <label><input type="radio" name="out" value="rom" checked> Volledige .3ds — om te spelen op een emulator (bv. Azahar)</label>
+    <label><input type="radio" name="out" value="layeredfs"> LayeredFS-zip — voor een echte 3DS met Luma3DS (uitpakken in de root van je SD-kaart)</label>
+    <label id="ftpLabel"><input type="radio" name="out" value="ftp"> Rechtstreeks naar je 3DS sturen via wifi (FTPD moet openstaan op de 3DS)</label>
+    <div class="row sub" id="ftpRow">IP-adres van je 3DS <input type="text" id="ftpHost" placeholder="192.168.1.23" style="width:150px"> poort <input type="number" id="ftpPort" value="5000" style="width:80px"></div>
+    <div class="sub" id="ftpHint"></div>
+    <div class="sub" id="tidInfo"></div>
+  </fieldset>
+
+  <div class="bar">
+    <div class="row">Seed <input type="text" id="seed" style="width:160px"> <button class="ghost" id="newSeed" type="button" title="Nieuwe seed">🎲</button></div>
+    <button id="go" disabled>Randomize</button>
+    <button class="ghost" id="again" disabled title="Nieuwe seed + randomize met dezelfde instellingen">🔁 Nieuwe run</button>
+    <button class="ghost" id="logBtn" style="display:none">Log downloaden</button>
+    <span id="status"></span>
+  </div>
+  <pre id="log"></pre>
+</main>
+
+<script src="js/util.js?v=20261118a"></script>
+<script src="js/data.js?v=20261118a"></script>
+<script src="js/gb.js?v=20261118a"></script>
+<script src="js/gba.js?v=20261118a"></script>
+<script src="js/nds.js?v=20261118a"></script>
+<script src="js/ctr.js?v=20261118a"></script>
+<script src="js/randomizer.js?v=20261118a"></script>
+<script src="js/app.js?v=20261118a"></script>
+</body>
+</html>
