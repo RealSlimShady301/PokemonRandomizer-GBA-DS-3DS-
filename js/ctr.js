@@ -168,7 +168,7 @@
         stats: [0, 1, 2, 3, 4, 5].map((k) => pd[o + k]),
         types: [TYPES6[pd[o + 6]] || 'Normal', TYPES6[pd[o + 7]] || 'Normal'],
         _origTypes: [TYPES6[pd[o + 6]] || 'Normal', TYPES6[pd[o + 7]] || 'Normal'],
-        catchRate: pd[o + 8], growth: pd[o + 0x15], abilities: [pd[o + 0x18], pd[o + 0x19], pd[o + 0x1A]],
+        catchRate: pd[o + 8], growth: pd[o + 0x15], abilities: [pd[o + 0x18], pd[o + 0x19], pd[o + 0x1A]], _origAb: [pd[o + 0x18], pd[o + 0x19], pd[o + 0x1A]],
         heldItems: [r16(pd, o + 0xC), r16(pd, o + 0xE), r16(pd, o + 0x10)], baseExp: r16(pd, o + 0x22) });
     }
     game.byId = new Map(game.species.map((s) => [s.id, s]));
@@ -181,6 +181,16 @@
         sp.abilities.forEach((a, k) => (pd[o + 0x18 + k] = a));
         sp.heldItems.forEach((it, k) => w16(pd, o + 0xC + k * 2, it));
         if (sp.baseExp !== undefined) w16(pd, o + 0x22, U.clamp(sp.baseExp, 1, 0xFFFF));
+      }
+      // andere vormen (bv. White/Black Kyurem, Mega's, Rotom-vormen) hebben een eigen entry: nieuwe abilities/types meenemen
+      const fi = r16(pd, sp.off + 0x1C), fc = pd[sp.off + 0x20];
+      const abCh = sp.abilities.join() !== sp._origAb.join(), tyCh = sp.types.join() !== sp._origTypes.join();
+      if (fi > maxSp && fc > 1 && (abCh || tyCh)) for (let f = fi; f < fi + fc - 1 && f < P.subs.length - 1; f++) {
+        const fo = [P.subs[f][0]]; if (hasTotal) fo.push(total[0] + f * ENTRY);
+        for (const o of fo) {
+          if (abCh) sp.abilities.forEach((a, k) => (pd[o + 0x18 + k] = a));
+          if (tyCh) { pd[o + 6] = TYPES6.indexOf(sp.types[0]); pd[o + 7] = TYPES6.indexOf(sp.types[1]); }
+        }
       }
     };
     game.moves = { valid: [], max: isG7 ? (isUSUM ? 728 : 719) : 621, info: () => null };
