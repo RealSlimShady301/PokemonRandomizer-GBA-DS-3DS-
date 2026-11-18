@@ -864,10 +864,10 @@
     const IMM = { Normal: 'Ghost', Electric: 'Ground', Fighting: 'Ghost', Poison: 'Steel', Ground: 'Flying', Psychic: 'Dark', Ghost: 'Normal', Dragon: 'Fairy' };
     const ALLT = Object.keys(SE);
     const eff = (atk, def) => ((IMM[atk] || '').split(' ').includes(def) ? 0 : SE[atk].split(' ').includes(def) ? 2 : NVE[atk].split(' ').includes(def) ? 0.5 : 1);
-    const typeLesson = (types) => {
+    const typeLesson = (types, cap) => {
       const own = [...new Set(types)];
-      const strong = ALLT.filter((d) => own.some((a) => eff(a, d) > 1)).slice(0, 3);
-      const weak = ALLT.filter((a) => own.reduce((m, d) => m * eff(a, d), 1) > 1).slice(0, 3);
+      const strong = ALLT.filter((d) => own.some((a) => eff(a, d) > 1)).slice(0, cap);
+      const weak = ALLT.filter((a) => own.reduce((m, d) => m * eff(a, d), 1) > 1).slice(0, cap);
       return { strong, weak };
     };
     const starterTextFix = async () => {
@@ -891,6 +891,11 @@
       }
       if (!best) return;
       const { G, d } = best;
+      const hs = r32(d, 4), dataOff = r32(d, 0x10), fatoSize = r32(d, hs + 4), fatb = hs + fatoSize;
+      const entOf = (i) => fatb + 12 + r32(d, hs + 12 + i * 4);
+      const al4 = (x) => (x + 3) & ~3;
+      // cap = max. aantal types in de typeles (0 = typeles niet herschrijven); kleiner als de tekst anders niet meer past
+      const build = (cap) => {
       const newFiles = [];
       let changed = 0;
       for (const [a0, a1] of G.subs) {
@@ -910,8 +915,8 @@
             for (const t of new Set(oldT[i])) { const from = toA('a ' + t + ' type'); let at = find(Ln.a, from, 0); while (at >= 0) { const to = toA((/^[AEIOU]/.test(typeWord(newT[i])) ? 'an ' : 'a ') + typeWord(newT[i]) + ' type'); Ln.a.splice(at, from.length, ...to); at = find(Ln.a, from, at + to.length); } }
             let str = String.fromCharCode(...Ln.a);
             const m1 = /(strong against )([A-Za-z ,]+?)( types?\.)/.exec(str), m2 = /(weak against )([A-Za-z ,]+?)( types?\.)/.exec(str);
-            if (m1 && m2) {
-              const { strong, weak } = typeLesson(newT[i]);
+            if (m1 && m2 && cap > 0) {
+              const { strong, weak } = typeLesson(newT[i], cap);
               const fmt = (l) => (l.length === 1 ? l[0] : l.length === 2 ? l[0] + ' and ' + l[1] : l.slice(0, -1).join(', ') + ', and ' + l[l.length - 1]);
               str = str.replace(m1[0], strong.length ? m1[1] + fmt(strong) + (strong.length > 1 ? ' types.' : ' types.') : 'strong against no type in particular.');
               str = str.replace(m2[0], weak.length ? m2[1] + fmt(weak) + ' types.' : 'weak against no type in particular.');
@@ -923,13 +928,15 @@
         }
         if (ch) { newFiles.push(txtWrite(lines)); changed++; } else newFiles.push(null);
       }
+      const blobs = G.subs.map(([a0, a1], i) => newFiles[i] || d.slice(a0, a0 + r32(d, entOf(i) + 12)));
+      return { changed, blobs, total: dataOff + blobs.reduce((q, b) => q + al4(b.length), 0) };
+      };
+      // liefst op de originele plek (de game volgt een verplaatst archief niet betrouwbaar): typeles zo nodig korter
+      let R = null;
+      for (const cap of [3, 2, 1, 0]) { R = build(cap); if (R.total <= G.size) break; }
+      const { changed, blobs, total } = R;
       if (!changed) return;
       // archief opnieuw opbouwen
-      const hs = r32(d, 4), dataOff = r32(d, 0x10), fatoSize = r32(d, hs + 4), fatb = hs + fatoSize;
-      const entOf = (i) => fatb + 12 + r32(d, hs + 12 + i * 4);
-      const al4 = (x) => (x + 3) & ~3;
-      const blobs = G.subs.map(([a0, a1], i) => newFiles[i] || d.slice(a0, a0 + r32(d, entOf(i) + 12)));
-      const total = dataOff + blobs.reduce((q, b) => q + al4(b.length), 0);
       const out = new Uint8Array(total); out.set(d.subarray(0, dataOff));
       let pos = 0, largest = 0;
       blobs.forEach((b, i) => { const e = entOf(i); if (!r32(d, e)) return; out.set(b, dataOff + pos); U.w32(out, e + 4, pos); U.w32(out, e + 8, pos + al4(b.length)); U.w32(out, e + 12, b.length); largest = Math.max(largest, al4(b.length)); pos += al4(b.length); });
