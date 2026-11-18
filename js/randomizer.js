@@ -28,7 +28,7 @@
       [/ evolueert nu in /g, ' now evolves into '], [/: ruil -> level 37 /g, ': trade -> level 37 '], [/: ruil met item -> level 37 /g, ': trade with item -> level 37 '],
       [/: ruil met item -> level stijgen terwijl hij (.*) vasthoudt /g, ': trade with item -> level up while holding $1 '],
       [/Item-ball /g, 'Item ball '], [/Verborgen item /g, 'Hidden item '], [/Prijs\/ruil /g, 'Prize/exchange '], [/\(normaal 1 op (\d+)\)/g, '(normal 1 in $1)'], [/^1 op (\d+)/, '1 in $1'],
-      [/\(gras\/grot\)/g, '(grass/cave)'], [/\(hoog gras\)/g, '(tall grass)'], [/\(ei\)/g, '(egg)'], [/\(zweven\)/g, '(soaring)'], [/\(fossiel\)/g, '(fossil)'], [/\(ruimte\)/g, '(space)'], [/\(vogelzwerm\)/g, '(bird flock)'], [/Zweven \(/g, 'Soaring ('], [/ bij Dewford /g, ' near Dewford '], [/(^|· )bij Fortree/g, '$1near Fortree'], [/niet gebruikt in het spel/g, 'not used in the game'], [/\(bloemen\)/g, '(flowers)'], [/\(oude hengel\)/g, '(Old Rod)'], [/\(goede hengel\)/g, '(Good Rod)'], [/\(superhengel\)/g, '(Super Rod)'], [/\(horde\)/g, '(horde)'], [/Gras groep (\d+) map (\d+)/g, 'Grass group $1 map $2'], [/Water groep (\d+) map (\d+)/g, 'Water group $1 map $2'], [/\(surfen\)/g, '(surfing)'], [/\(vissen\)/g, '(fishing)'], [/\(rotsen\)/g, '(rock smash)'], [/Gebied /g, 'Area '],
+      [/\(gras\/grot\)/g, '(grass/cave)'], [/\(hoog gras\)/g, '(tall grass)'], [/\(ei\)/g, '(egg)'], [/\(zweven\)/g, '(soaring)'], [/\(fossiel\)/g, '(fossil)'], [/\(ruimte\)/g, '(space)'], [/\(vogelzwerm\)/g, '(bird flock)'], [/\(beschermd: nodig voor /g, '(protected: needed for '], [/\(beschermd: story\)/g, '(protected: story)'], [/Zweven \(/g, 'Soaring ('], [/ bij Dewford /g, ' near Dewford '], [/(^|· )bij Fortree/g, '$1near Fortree'], [/niet gebruikt in het spel/g, 'not used in the game'], [/\(bloemen\)/g, '(flowers)'], [/\(oude hengel\)/g, '(Old Rod)'], [/\(goede hengel\)/g, '(Good Rod)'], [/\(superhengel\)/g, '(Super Rod)'], [/\(horde\)/g, '(horde)'], [/Gras groep (\d+) map (\d+)/g, 'Grass group $1 map $2'], [/Water groep (\d+) map (\d+)/g, 'Water group $1 map $2'], [/\(surfen\)/g, '(surfing)'], [/\(vissen\)/g, '(fishing)'], [/\(rotsen\)/g, '(rock smash)'], [/Gebied /g, 'Area '],
       [/\[belangrijk/g, '[important'], [/, type /g, ', type '], [/ \(was /g, ' (was '], [/^Gift /, 'Gift '], [/ wild: /g, ' wild: '],
     ] : null;
     const L = (s) => { if (EN && typeof s === 'string') for (const [rx, rep] of EN) s = s.replace(rx, rep); log.push(s); };
@@ -352,6 +352,7 @@
       for (const st of game.statics) {
         if (st.kind === 'gift' && !opt.giftsToo) continue;
         if (opt.protectStory && st.story) { L(st.label + ' (Lv' + st.level + '): ' + nm(st.species) + ' (beschermd: story)'); continue; }
+        if (opt.protectStory && st.key) { L(st.label + ' (Lv' + st.level + '): ' + nm(st.species) + ' (beschermd: nodig voor ' + st.key + ')'); continue; }
         const o = game.byId.get(st.species), leg = !!(o && isLeg(o));
         const base = pool(false);
         let cands = opt.staticLegSwap ? base.filter((s) => isLeg(s) === leg) : base;

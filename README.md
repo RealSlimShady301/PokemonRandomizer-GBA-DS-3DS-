@@ -25,7 +25,7 @@ Welke opties je ziet hangt af van de geladen game.
 - **Starters:** willekeurig, vergelijkbare sterkte of zelf kiezen (met autocomplete). De naam **en het type** van de starter worden ook in de verhaaltekst aangepast (bv. Prof. Elm, Oak, Kukui).
 - **Wilde Pokémon:** per slot, per gebied, globaal of oplopend met de levels; inclusief Safari Zone, Headbutt-bomen, Bug-Catching Contest, hordes en SOS-oproepen. Optie: eerste routes makkelijker te vangen.
 - **Trainers:** willekeurige teams, gym leaders behouden hun type, sterkere AI en IV's, betere movesets, Full Restores voor bazen, levels omhoog.
-- **Static encounters & gifts:** legendaries, fossielen, Game Corner-prijzen… Story-legendaries (bv. Kyogre/Groudon, Xerneas/Yveltal, Solgaleo/Lunala) blijven dezelfde soort zodat het verhaal werkt.
+- **Static encounters & gifts:** legendaries, fossielen, Game Corner-prijzen… Story-legendaries (bv. Kyogre/Groudon, Xerneas/Yveltal, Solgaleo/Lunala) blijven dezelfde soort zodat het verhaal werkt; in ORAS ook de legendaries die een andere Mirage spot openen (bv. Dialga/Palkia voor Giratina).
 - **Aanvallen:** willekeurige level-up aanvallen (met voorkeur voor eigen type), TM's, TM-compatibiliteit.
 - **Items:** item-balls, verborgen items, NPC-items, Game Corner-prijzen en Poké Marts. Key items blijven op hun plek; een TM wordt altijd een andere TM; basisitems (Poké Balls, Potions…) blijven altijd te koop.
 - **Overige:** in-game trades, daycare-eieren, ruil-evoluties zonder ruilen, willekeurige evoluties en evolutie-levels, monotype-uitdaging, shiny-kans (tot 1 op 256), XP-rem tegen te snel levelen.

@@ -54,7 +54,7 @@ Bijgehouden zodat dit later nog toegevoegd kan worden. Alles hieronder is **nog 
 ## Omega Ruby / Alpha Sapphire
 - Wally's Ralts (zit in een story-script); DexNav.
 - "Waar vang je wat": alleen bij Kyogre/Groudon Lv60 en Wurmple Lv3 (static) is de plaats onbekend. Kanto-starters Lv10 en Lucario Lv32 staan in de gift-tabel maar worden in het spel niet gebruikt.
-- Voorwaarden van Mirage spots blijven die van het origineel (bv. Giratina vraagt nog Dialga + Palkia in je team, de Lake-trio vraagt 3 Pokémon met maximale vriendschap).
+- Mirage spots: met story-bescherming blijven de Pokémon die een andere spot openen dezelfde (Uxie/Mesprit/Azelf, Dialga/Palkia, Reshiram/Zekrom, Lugia/Ho-Oh); zonder bescherming kunnen Giratina, Kyurem en de beasts onbereikbaar worden. Giratina en Kyurem vragen ook in het origineel beide versies (ruilen).
 - Niet in-game getest: TM's (nieuw).
 
 ## Sun / Moon / Ultra Sun / Ultra Moon

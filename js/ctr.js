@@ -760,6 +760,9 @@
             : (sp === 261 && lv <= 5 && st.kind === 'static') ? 'Route 101 (Prof. Birch)'
             : ((sp === 1 || sp === 4 || sp === 7) && lv === 10 && st.kind === 'gift') || (sp === 448 && st.kind === 'gift') ? 'niet gebruikt in het spel'
             : (sp === 25 && st.kind !== 'gift') ? undefined : P[sp];
+          // nodig om een andere Mirage spot te openen: blijft dezelfde soort met story-bescherming
+          const KEY = { 480: 'Dialga/Palkia', 481: 'Dialga/Palkia', 482: 'Dialga/Palkia', 483: 'Giratina', 484: 'Giratina', 643: 'Kyurem', 644: 'Kyurem', 249: 'Raikou/Entei/Suicune', 250: 'Raikou/Entei/Suicune' };
+          if (KEY[sp] && st.kind === 'static') st.key = KEY[sp];
         }
       }
 
