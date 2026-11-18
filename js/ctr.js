@@ -420,7 +420,7 @@
     } else game.warnings.push('Trainerdata niet gevonden');
 
     // ---- Wilde Pokémon (ORAS: zone-bestanden + "EN"-kopie achteraan in het zone-archief) ----
-    let zoneFix = null, wildZoneG = null;
+    let zoneFix = null, wildZoneG = null, starterScriptFix = null;
     for (const G of garcs) {
       const last = G.subs.length - 1; if (last < 1) continue;
       const p = await prefix(G, last, 4);
@@ -442,6 +442,38 @@
         if (o4 - o3 !== e - s || !u.subarray(o3, o4).every((v, k) => v === zd[s + k])) continue;
         zoneU.set(z, { u, o3, enStart: s, comp, slot: [a, b] });
       }
+      // Starternaam in de zone-scripts (bv. Birch's lab: "[speler] received Torchic!"): het script kiest de soort
+      // met drie instructies (soort << 16 | opcode) voor 252/255/258. Die worden vervangen door de nieuwe starters.
+      const zoneX = new Map();
+      starterScriptFix = () => {
+        if (!pendingStarterOrig || !pendingStarterNew || pendingStarterOrig.join() === pendingStarterNew.join()) return;
+        const O = pendingStarterOrig, N = pendingStarterNew;
+        for (let z = 0; z < last; z++) {
+          const [a, b] = G.subs[z]; if (b - a < 0x40) continue;
+          let Zn = zoneU.get(z), u = Zn ? Zn.u : null, comp;
+          if (!u) { const raw = gd.subarray(a, b); comp = raw[0] === 0x11; u = comp ? lz11Dec(raw) : raw.slice(); if (!u || r16(u, 0) !== 0x4F5A) continue; }
+          let hit = false;
+          for (let o = 0; o + 0x20 < u.length; o += 4) {
+            if (r16(u, o + 4) !== 0xF1E0) continue;
+            const size = r32(u, o), cod = r32(u, o + 0xC), dat = r32(u, o + 0x10), hea = r32(u, o + 0x14);
+            if (!(cod <= dat && dat <= hea && size <= u.length - o && size > cod)) continue;
+            // woorden decoderen met hun byte-positie
+            const words = [], pos = []; let f = o + cod, j = 0, x = 0, st = f; const end = o + size, cnt = (hea - cod) / 4;
+            while (words.length < cnt && f < end) { const by = u[f++], v = by & 0x7F; if (++j === 1) { x = ((((v >> 6) === 0 ? 1 : 0) - 1) << 6) | v; st = f - 1; } else x = (x << 7) | v; if (by & 0x80) continue; words.push(x | 0); pos.push([st, f]); j = 0; }
+            for (let k = 0; k < words.length; k++) {
+              if ((words[k] >>> 16) !== O[0]) continue;
+              const op = words[k] & 0xFFFF, idx = [k];
+              for (const sp of [O[1], O[2]]) { const q = words.findIndex((w, m) => m > idx[idx.length - 1] && m < idx[idx.length - 1] + 40 && (w >>> 16) === sp && (w & 0xFFFF) === op); if (q < 0) break; idx.push(q); }
+              if (idx.length !== 3) continue;
+              idx.forEach((q, n) => {
+                const nw = (N[n] << 16) | op, enc = amxEnc1(nw), [p0, p1] = pos[q];
+                if (enc.length === p1 - p0) { u.set(enc, p0); hit = true; }
+              });
+            }
+          }
+          if (hit) { if (!Zn) zoneX.set(z, { u, comp }); dirty.add(z); }
+        }
+      };
       zoneFix = async () => {
         if (!dirty.size) return;
         // Hele zone-archief opnieuw opbouwen (zelfde totale grootte): bestanden achter elkaar, uitgelijnd op 4 bytes
@@ -450,7 +482,7 @@
         const blobs = [];
         for (let i = 0; i < n; i++) {
           const E = entry(i);
-          if (dirty.has(i)) { const Zn = zoneU.get(i); blobs.push(Zn.comp ? lz11Enc(Zn.u) : Zn.u.slice()); }
+          if (dirty.has(i)) { const Zn = zoneU.get(i) || zoneX.get(i); blobs.push(Zn.comp ? lz11Enc(Zn.u) : Zn.u.slice()); }
           else blobs.push(gd.slice(dataOff + E.start, dataOff + E.start + E.len));
         }
         const total = () => blobs.reduce((a, b) => a + al4(b.length), 0);
@@ -466,6 +498,7 @@
         while (total() > region && order.length) {
           const z = order.shift(), E = entry(z), Zn = zoneU.get(z);
           blobs[z] = gd.slice(dataOff + E.start, dataOff + E.start + E.len);
+          if (!Zn) { game.warnings.push('Starternaam in zone-script ' + z + ' kon niet aangepast worden (geen ruimte)'); continue; }
           const orig = Zn.comp ? lz11Dec(blobs[z]) : blobs[z];
           zd.set(orig.subarray(Zn.o3, Zn.o3 + 260), Zn.enStart);
           game.warnings.push('Zone ' + z + ' kon niet aangepast worden (geen ruimte) en is origineel gebleven');
@@ -951,7 +984,7 @@
       meta(G.path, donor.off, total); meta(donor.path, donor.off, total);
       game.warnings.push('Starternamen in de tekst aangepast (de tekst van een andere taal, ' + donor.path + ', is daarvoor vervangen door Engels)');
     };
-    const runFixups = async () => { if (fixed) return; fixed = true; for (const f of fixups) await f(); await starterTextFix(); if (zoneFix) await zoneFix(); if (worldFix) { await worldFix(); for (const p of partial) loaded.push(p); } };
+    const runFixups = async () => { if (fixed) return; fixed = true; for (const f of fixups) await f(); await starterTextFix(); if (starterScriptFix) starterScriptFix(); if (zoneFix) await zoneFix(); if (worldFix) { await worldFix(); for (const p of partial) loaded.push(p); } };
 
     // ---- Output: patches + hashes ----
     game.buildPatches = async () => {
