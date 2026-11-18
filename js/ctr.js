@@ -742,15 +742,23 @@
       // Plaats van gifts/statics in ORAS (voor het "waar vang je wat"-overzicht), op basis van de originele Pokémon
       if (!/^0004000000055[DE]00$/.test(titleId)) {
         const P = {}, put = (pl, ...sp) => sp.forEach((x) => (P[x] = pl));
-        put('Mossdeep City (Steven)', 374); put('Weather Institute', 351); put('Lavaridge Town (ei)', 360);
-        put('Desert Ruins', 377); put('Island Cave', 378, 486); put('Ancient Tomb', 379); put('Sky Pillar', 384); put('Delta Episode (ruimte)', 386);
-        put('Route 119/120', 352); put('New Mauville', 100); put('Team Aqua/Magma Hideout', 101); put('Contest Spectacular (Cosplay Pikachu)', 25);
+        // bron: serebii.net (ORAS: gift, legendary, interactable, soar)
+        put('Mossdeep City (Steven)', 374); put('Weather Institute', 351); put('Lavaridge Town (ei)', 360, 175);
+        put('Desert Ruins', 377); put('Island Cave', 378, 486); put('Ancient Tomb', 379); put('Sky Pillar', 384, 386);
+        put('Team Aqua/Magma Hideout', 101); put('New Mauville', 100); put('Slateport City (Cosplay Pikachu)', 25);
         put('Rustboro City (fossiel)', 345, 347, 138, 140, 142, 410, 408, 564, 566, 696, 698);
-        put('Littleroot Town (Prof. Birch)', 152, 155, 158, 387, 390, 393, 495, 498, 501);
-        put('Mirage spot (zweven)', 641, 642, 645, 483, 484, 487, 243, 244, 245, 638, 639, 640, 480, 481, 482, 643, 644, 646, 249, 250, 485, 488);
+        put('Route 101 (Prof. Birch)', 152, 155, 158, 387, 390, 393, 495, 498, 501);
+        put('Battle Resort', 323, 319); put('Sea Mauville', 442, 249, 250); put('Scorched Slab', 485);
+        put('Nameless Cavern (Mirage spot)', 480, 481, 482); put('Mirage spot bij Dewford (zweven)', 483, 484, 487);
+        put('Pathless Plain (Mirage spot)', 638, 639, 640); put('Fabled Cave (Mirage spot)', 643, 644); put('Gnarled Den (Mirage spot)', 646);
+        put('Trackless Forest (Mirage spot)', 243, 244, 245); put('bij Fortree City (zweven)', 641, 642, 645); put('Crescent Isle (Mirage spot)', 488);
+        put('Zweven (vogelzwerm)', 276, 278, 279, 333, 628, 425, 198);
         for (const st of game.statics) {
           const sp = st.species, lv = st.level;
-          st.place = (sp === 380 || sp === 381) ? (lv === 30 ? 'Southern Island' : undefined) : (sp === 382 || sp === 383) ? (lv === 45 ? 'Cave of Origin' : undefined)
+          st.place = sp === 352 ? ({ 30: 'Route 119/120', 40: 'Lavaridge Town', 45: 'Mossdeep City (Space Center)' })[lv]
+            : (sp === 380 || sp === 381) ? (lv === 30 ? 'Southern Island' : undefined) : (sp === 382 || sp === 383) ? (lv === 45 ? 'Cave of Origin' : undefined)
+            : (sp === 261 && lv <= 5 && st.kind === 'static') ? 'Route 101 (Prof. Birch)'
+            : ((sp === 1 || sp === 4 || sp === 7) && lv === 10 && st.kind === 'gift') || (sp === 448 && st.kind === 'gift') ? 'niet gebruikt in het spel'
             : (sp === 25 && st.kind !== 'gift') ? undefined : P[sp];
         }
       }
