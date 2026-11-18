@@ -40,7 +40,7 @@ Bijgehouden zodat dit later nog toegevoegd kan worden. Alles hieronder is **nog 
 - Poké Marts; NPC-items (andere scriptvorm).
 - Hidden grottos; Join Avenue.
 - Pokédex-gebiedskaart ("habitat") toont nog de originele plaatsen: de game bewaart ze als afbeeldingen.
-- Starternaam: alleen het keuzescherm; teksten in de Striaton-gym-quiz noemen nog de originele starters.
+- Starternaam: keuzescherm en verhaaltekst (gym-quiz, boeken, NPC's) aangepast; de lengte/gewicht-quiz (met getallen) noemt nog de originele starters.
 - Starter-keuzescherm: script-aanpassing is experimenteel.
 - "NDSi Enhanced": op een echte DSi/3DS in DSi-modus kan de aangepaste code geweigerd worden; emulators en DS-modus zijn ok.
 - Niet in-game getest: wilde Pokémon, starters, TM's, trades, items in het veld.
@@ -48,7 +48,7 @@ Bijgehouden zodat dit later nog toegevoegd kan worden. Alles hieronder is **nog 
 ## X / Y
 - Friend Safari; hordes zijn nu 5 verschillende Pokémon.
 - Pokédex-gebied: niet nagekeken of de game dit zelf uit de wilde data haalt (ORAS: de gezamenlijke encountertabel wordt mee aangepast).
-- Starternaam: Tierno's quiz (lengte/gewicht) blijft over de originele starters gaan; Shauna's opmerking ook.
+- Starternaam: verhaal-, systeemtekst en scripts aangepast; alleen Tierno's lengte/gewicht-quiz (met getallen) blijft over de originele starters gaan.
 - Niet in-game getest: wilde Pokémon, statics, starters, TM's.
 
 ## Omega Ruby / Alpha Sapphire
@@ -62,7 +62,7 @@ Bijgehouden zodat dit later nog toegevoegd kan worden. Alles hieronder is **nog 
 ## Sun / Moon / Ultra Sun / Ultra Moon
 - Items in het veld (en dus Z-kristallen per categorie) en Poké Marts: uitgezocht maar nog niet gevonden waar de game ze bewaart (niet in de scripttabel zoals in X/Y/ORAS, en niet als vaste velden in de wereld-data).
 - Daycare-eieren, Island Scan, Poké Pelago.
-- Starternaam + type in de keuze-tekst van Kukui zijn ingebouwd; daarvoor wordt de verhaaltekst van een andere taal vervangen door Engels als de tekst groter wordt.
+- Starternaam in verhaaltekst en scripts aangepast (tekst blijft op zijn plek); past het niet, dan worden alleen de namen vervangen en niet de types erbij (melding in de opmerkingen).
 - Wilde Pokémon: in sommige gebieden past "elk slot apart" niet; daar wordt elke soort door één vaste willekeurige soort vervangen (de log kan daar afwijken).
 - Niet in-game getest (alles), incl. de Ultra Necrozma-cutscene (Necrozma blijft Necrozma).
 

@@ -471,7 +471,7 @@
         const str = (cs) => String.fromCharCode(...cs.filter((c) => c !== 0xFFFF));
         let ch = false;
         lines.forEach((l) => { const i = starterOrig.findIndex((sp) => PKDATA.nameOf(sp) === str(l.cs)); if (i >= 0) { l.cs = [...PKDATA.nameOf(starterNew[i])].map((c) => c.charCodeAt(0)).concat([0xFFFF]); ch = true; } });
-        if (!ch) return;
+        if (ch) {
         // opnieuw opbouwen (1 sectie)
         let pos = 4 + n * 8; const offs = lines.map((l) => { const o = pos; pos += l.cs.length * 2; return o; });
         const f = new Uint8Array(0x10 + pos);
@@ -482,6 +482,51 @@
         });
         const files = N5.subs.map(([q0, q1], i) => (i === 0 ? f : rom.slice(q0, q1)));
         placeNarc('a/0/0/2', narcBuild(files));
+        }
+        // verhaaltekst (a/0/0/3): starternamen vervangen (regels met getallen, zoals de lengte/gewicht-quiz, niet)
+        const NS = narcAt('a/0/0/3'); if (!NS) return;
+        const g5dec = (a, b) => {
+          if (b - a < 0x14 || r16(rom, a) !== 1) return null;
+          const n2 = r16(rom, a + 2), so2 = a + r32u(a + 0xC); if (!n2 || so2 + 4 + n2 * 8 > b) return null;
+          const out = [];
+          for (let i = 0; i < n2; i++) {
+            const off = r32u(so2 + 4 + i * 8), len = r16(rom, so2 + 8 + i * 8); if (!len || so2 + off + len * 2 > b) return null;
+            const raw = []; for (let j = 0; j < len; j++) raw.push(r16(rom, so2 + off + j * 2));
+            let key = raw[len - 1] ^ 0xFFFF; const K = key, cs = new Array(len);
+            for (let j = len - 1; j >= 0; j--) { cs[j] = raw[j] ^ key; key = ((key >> 3) | (key << 13)) & 0xFFFF; }
+            out.push({ cs, K, extra: r16(rom, so2 + 10 + i * 8) });
+          }
+          return out;
+        };
+        const g5enc = (L5) => {
+          const n2 = L5.length; let pos = 4 + n2 * 8; const offs = L5.map((l) => { const o = pos; pos += l.cs.length * 2; return o; });
+          const f = new Uint8Array(0x10 + pos);
+          w16(f, 0, 1); w16(f, 2, n2); U.w32(f, 4, pos); U.w32(f, 8, 0); U.w32(f, 0xC, 0x10); U.w32(f, 0x10, pos);
+          L5.forEach((l, i) => {
+            U.w32(f, 0x14 + i * 8, offs[i]); w16(f, 0x18 + i * 8, l.cs.length); w16(f, 0x1A + i * 8, l.extra);
+            let key = l.K; for (let j = l.cs.length - 1; j >= 0; j--) { w16(f, 0x10 + offs[i] + j * 2, (l.cs[j] ^ key) & 0xFFFF); key = ((key >> 3) | (key << 13)) & 0xFFFF; }
+          });
+          return f;
+        };
+        const toA = (t) => [...t].map((c) => c.charCodeAt(0));
+        const fnd = (a, sub, from) => { for (let i = from; i + sub.length <= a.length; i++) { let ok = true; for (let k = 0; k < sub.length; k++) if (a[i + k] !== sub[k]) { ok = false; break; } if (ok) return i; } return -1; };
+        const oldA = starterOrig.map((sp) => toA(PKDATA.nameOf(sp))), newA = starterNew.map((sp) => toA(PKDATA.nameOf(sp)));
+        let changed5 = 0;
+        const files5 = NS.subs.map(([q0, q1]) => {
+          const L5 = g5dec(q0, q1); if (!L5) return rom.slice(q0, q1);
+          let chf = false;
+          for (const l of L5) {
+            const plain = String.fromCharCode(...l.cs.filter((c) => c < 0xF000 && c !== 0xFFFF));
+            if (!oldA.some((o) => fnd(l.cs, o, 0) >= 0) || /[0-9]/.test(plain)) continue;
+            // voorkom dat een nieuwe naam die een oude naam bevat opnieuw vervangen wordt: in één keer per positie
+            const out = []; let i = 0;
+            while (i < l.cs.length) { const k = oldA.findIndex((o) => o.length && o.every((c, q) => l.cs[i + q] === c)); if (k >= 0) { out.push(...newA[k]); i += oldA[k].length; } else out.push(l.cs[i++]); }
+            l.cs = out; chf = true;
+          }
+          if (chf) { changed5++; return g5enc(L5); }
+          return rom.slice(q0, q1);
+        });
+        if (changed5) placeNarc('a/0/0/3', narcBuild(files5));
         return;
       }
       const N = narcAt(tp); if (!N) return;

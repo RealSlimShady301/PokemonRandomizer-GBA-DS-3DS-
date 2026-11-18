@@ -421,6 +421,30 @@
 
     // ---- Wilde Pokémon (ORAS: zone-bestanden + "EN"-kopie achteraan in het zone-archief) ----
     let zoneFix = null, wildZoneG = null, starterScriptFix = null;
+    // Starter in een (gedecomprimeerd) zone-bestand: AMX-scripts met drie instructies (soort << 16 | opcode) voor de 3 starters
+    const patchStarterAmx = (u) => {
+      const O = pendingStarterOrig, N = pendingStarterNew; let hit = false;
+          for (let o = 0; o + 0x20 < u.length; o += 4) {
+            if (r16(u, o + 4) !== 0xF1E0) continue;
+            const size = r32(u, o), cod = r32(u, o + 0xC), dat = r32(u, o + 0x10), hea = r32(u, o + 0x14);
+            if (!(cod <= dat && dat <= hea && size <= u.length - o && size > cod)) continue;
+            // woorden decoderen met hun byte-positie
+            const words = [], pos = []; let f = o + cod, j = 0, x = 0, st = f; const end = o + size, cnt = (hea - cod) / 4;
+            while (words.length < cnt && f < end) { const by = u[f++], v = by & 0x7F; if (++j === 1) { x = ((((v >> 6) === 0 ? 1 : 0) - 1) << 6) | v; st = f - 1; } else x = (x << 7) | v; if (by & 0x80) continue; words.push(x | 0); pos.push([st, f]); j = 0; }
+            for (let k = 0; k < words.length; k++) {
+              if ((words[k] >>> 16) !== O[0]) continue;
+              const op = words[k] & 0xFFFF, idx = [k];
+              for (const sp of [O[1], O[2]]) { const q = words.findIndex((w, m) => m > idx[idx.length - 1] && m < idx[idx.length - 1] + 40 && (w >>> 16) === sp && (w & 0xFFFF) === op); if (q < 0) break; idx.push(q); }
+              if (idx.length !== 3) continue;
+              idx.forEach((q, n) => {
+                const nw = (N[n] << 16) | op, enc = amxEnc1(nw), [p0, p1] = pos[q];
+                if (enc.length === p1 - p0) { u.set(enc, p0); hit = true; }
+              });
+            }
+          }
+      return hit;
+    };
+
     for (const G of garcs) {
       const last = G.subs.length - 1; if (last < 1) continue;
       const p = await prefix(G, last, 4);
@@ -447,30 +471,11 @@
       const zoneX = new Map();
       starterScriptFix = () => {
         if (!pendingStarterOrig || !pendingStarterNew || pendingStarterOrig.join() === pendingStarterNew.join()) return;
-        const O = pendingStarterOrig, N = pendingStarterNew;
         for (let z = 0; z < last; z++) {
           const [a, b] = G.subs[z]; if (b - a < 0x40) continue;
           let Zn = zoneU.get(z), u = Zn ? Zn.u : null, comp;
           if (!u) { const raw = gd.subarray(a, b); comp = raw[0] === 0x11; u = comp ? lz11Dec(raw) : raw.slice(); if (!u || r16(u, 0) !== 0x4F5A) continue; }
-          let hit = false;
-          for (let o = 0; o + 0x20 < u.length; o += 4) {
-            if (r16(u, o + 4) !== 0xF1E0) continue;
-            const size = r32(u, o), cod = r32(u, o + 0xC), dat = r32(u, o + 0x10), hea = r32(u, o + 0x14);
-            if (!(cod <= dat && dat <= hea && size <= u.length - o && size > cod)) continue;
-            // woorden decoderen met hun byte-positie
-            const words = [], pos = []; let f = o + cod, j = 0, x = 0, st = f; const end = o + size, cnt = (hea - cod) / 4;
-            while (words.length < cnt && f < end) { const by = u[f++], v = by & 0x7F; if (++j === 1) { x = ((((v >> 6) === 0 ? 1 : 0) - 1) << 6) | v; st = f - 1; } else x = (x << 7) | v; if (by & 0x80) continue; words.push(x | 0); pos.push([st, f]); j = 0; }
-            for (let k = 0; k < words.length; k++) {
-              if ((words[k] >>> 16) !== O[0]) continue;
-              const op = words[k] & 0xFFFF, idx = [k];
-              for (const sp of [O[1], O[2]]) { const q = words.findIndex((w, m) => m > idx[idx.length - 1] && m < idx[idx.length - 1] + 40 && (w >>> 16) === sp && (w & 0xFFFF) === op); if (q < 0) break; idx.push(q); }
-              if (idx.length !== 3) continue;
-              idx.forEach((q, n) => {
-                const nw = (N[n] << 16) | op, enc = amxEnc1(nw), [p0, p1] = pos[q];
-                if (enc.length === p1 - p0) { u.set(enc, p0); hit = true; }
-              });
-            }
-          }
+          const hit = patchStarterAmx(u);
           if (hit) { if (!Zn) zoneX.set(z, { u, comp }); dirty.add(z); }
         }
       };
@@ -577,12 +582,21 @@
           dirty.add(z);
         } });
       }
+      const zoneX = new Map();
+      starterScriptFix = () => {
+        if (!pendingStarterOrig || !pendingStarterNew || pendingStarterOrig.join() === pendingStarterNew.join()) return;
+        for (let z = 0; z < G.subs.length; z++) {
+          const Zn = zoneU.get(z); let u = Zn ? Zn.u : null;
+          if (!u) { const [a, b] = G.subs[z]; const raw = gd.subarray(a, b); if (b - a < 0x40 || raw[0] !== 0x11) continue; u = lz11Dec(raw); if (!u || r16(u, 0) !== 0x4F5A) continue; }
+          if (patchStarterAmx(u)) { if (!Zn) zoneX.set(z, { u }); dirty.add(z); }
+        }
+      };
       zoneFix = async () => {
         if (!dirty.size) return;
         const n = G.subs.length, region = G.size - dataOff, al4 = (x) => (x + 3) & ~3;
         const entry = (i) => { const fe = fatEntry(i); return { fe, start: r32(gd, fe + 4), len: r32(gd, fe + 12) }; };
         const blobs = [];
-        for (let i = 0; i < n; i++) { const E = entry(i); blobs.push(dirty.has(i) ? lz11Enc(zoneU.get(i).u) : gd.slice(dataOff + E.start, dataOff + E.start + E.len)); }
+        for (let i = 0; i < n; i++) { const E = entry(i); blobs.push(dirty.has(i) ? lz11Enc((zoneU.get(i) || zoneX.get(i)).u) : gd.slice(dataOff + E.start, dataOff + E.start + E.len)); }
         const total = () => blobs.reduce((a, b) => a + al4(b.length), 0);
         for (let i = 0; i < n && total() > region; i++) {
           if (dirty.has(i) || blobs[i][0] !== 0x11) continue;
@@ -707,6 +721,17 @@
         break;
       }
     }
+    // Gen 7: script-archief (ongecomprimeerde AMX-bestanden): starter-instructies op dezelfde plek vervangen (zelfde lengte)
+    if (isG7 && !starterScriptFix) starterScriptFix = async () => {
+      if (!pendingStarterOrig || !pendingStarterNew || pendingStarterOrig.join() === pendingStarterNew.join()) return;
+      for (const G of garcs) {
+        if (G.subs.length < 300 || G.subs.length > 2000 || G.size > 20e6) continue;
+        const p = await prefix(G, 1, 8); if (!p || r16(p, 4) !== 0xF1E0) continue;
+        const gd = await loadGarc(G); let hit = false;
+        for (const [a, b] of G.subs) if (b - a > 0x20 && r16(gd, a + 4) === 0xF1E0 && patchStarterAmx(gd.subarray(a, b))) hit = true;
+        if (hit) use(G);
+      }
+    };
     if (!game.wild.length) game.warnings.push('Wilde Pokémon niet gevonden in deze 3DS-game');
     let pendingStarterOrig = null, pendingStarterNew = null;
     // ---- Starters: gift-tabel in een .cro (ORAS: DllField.cro, 36-byte entries, level op +5) ----
@@ -928,7 +953,8 @@
       const entOf = (i) => fatb + 12 + r32(d, hs + 12 + i * 4);
       const al4 = (x) => (x + 3) & ~3;
       // cap = max. aantal types in de typeles (0 = typeles niet herschrijven); kleiner als de tekst anders niet meer past
-      const build = (cap) => {
+      const build = (cap, prim) => {
+      const tw = (t) => (prim ? t[0] : typeWord(t));
       const newFiles = [];
       let changed = 0;
       for (const [a0, a1] of G.subs) {
@@ -939,13 +965,13 @@
           if (!which.length) continue;
           if (/[0-9]/.test(String.fromCharCode(...Ln.a.filter((c) => c < 0xE000)))) continue; // feitjes met getallen (lengte/gewicht-quiz) niet aanpassen
           // type-woord van de starter in deze regel (alleen als er één starter in staat)
-          if (which.length === 1) {
+          if (which.length === 1 && cap >= 0) {
             const i = which[0];
-            for (const t of new Set(oldT[i])) { const from = toA(t + '-type'); let at = find(Ln.a, from, 0); while (at >= 0) { const to = toA(typeWord(newT[i]) + '-type'); Ln.a.splice(at, from.length, ...to); at = find(Ln.a, from, at + to.length); } }
+            for (const t of new Set(oldT[i])) { const from = toA(t + '-type'); let at = find(Ln.a, from, 0); while (at >= 0) { const to = toA(tw(newT[i]) + '-type'); Ln.a.splice(at, from.length, ...to); at = find(Ln.a, from, at + to.length); } }
           }
-          if (which.length === 1) { // ORAS: "is a Grass type." (zonder streepje) + typeles "strong against ... / weak against ..."
+          if (which.length === 1 && cap >= 0) { // ORAS: "is a Grass type." (zonder streepje) + typeles "strong against ... / weak against ..."
             const i = which[0];
-            for (const t of new Set(oldT[i])) { const from = toA('a ' + t + ' type'); let at = find(Ln.a, from, 0); while (at >= 0) { const to = toA((/^[AEIOU]/.test(typeWord(newT[i])) ? 'an ' : 'a ') + typeWord(newT[i]) + ' type'); Ln.a.splice(at, from.length, ...to); at = find(Ln.a, from, at + to.length); } }
+            for (const t of new Set(oldT[i])) { const from = toA('a ' + t + ' type'); let at = find(Ln.a, from, 0); while (at >= 0) { const to = toA((/^[AEIOU]/.test(tw(newT[i])) ? 'an ' : 'a ') + tw(newT[i]) + ' type'); Ln.a.splice(at, from.length, ...to); at = find(Ln.a, from, at + to.length); } }
             let str = String.fromCharCode(...Ln.a);
             const m1 = /(strong against )([A-Za-z ,]+?)( types?\.)/.exec(str), m2 = /(weak against )([A-Za-z ,]+?)( types?\.)/.exec(str);
             if (m1 && m2 && cap > 0) {
@@ -966,7 +992,8 @@
       };
       // liefst op de originele plek (de game volgt een verplaatst archief niet betrouwbaar): typeles zo nodig korter
       let R = null;
-      for (const cap of [3, 2, 1, 0]) { R = build(cap); if (R.total <= G.size) break; }
+      let lvl = null; for (lvl of [[3, false], [2, false], [1, false], [0, false], [0, true], [-1, false]]) { R = build(lvl[0], lvl[1]); if (R.total <= G.size) break; }
+      if (lvl[0] < 0) game.warnings.push('Starternamen in de verhaaltekst aangepast, maar de types erbij niet (te weinig ruimte in het tekstarchief)');
       const { changed, blobs, total } = R;
       if (!changed) return;
       // archief opnieuw opbouwen
@@ -984,7 +1011,38 @@
       meta(G.path, donor.off, total); meta(donor.path, donor.off, total);
       game.warnings.push('Starternamen in de tekst aangepast (de tekst van een andere taal, ' + donor.path + ', is daarvoor vervangen door Engels)');
     };
-    const runFixups = async () => { if (fixed) return; fixed = true; for (const f of fixups) await f(); await starterTextFix(); if (starterScriptFix) starterScriptFix(); if (zoneFix) await zoneFix(); if (worldFix) { await worldFix(); for (const p of partial) loaded.push(p); } };
+    // Systeemtekst (Engels, o.a. trainerzinnen zoals "my cute Li'l Froakie"): alleen namen in zinnen (geen losse namen = lijsten),
+    // geen regels met getallen; het archief wordt op zijn eigen plek opnieuw opgebouwd (past het niet: niets aanpassen).
+    const sysStarterTextFix = async () => {
+      if (!textG || !pendingStarterOrig || !pendingStarterNew || pendingStarterOrig.join() === pendingStarterNew.join()) return;
+      const G = textG, d = await loadGarc(G);
+      const oldA = pendingStarterOrig.map((x) => [...PKDATA.nameOf(x)].map((c) => c.charCodeAt(0))), newA = pendingStarterNew.map((x) => [...PKDATA.nameOf(x)].map((c) => c.charCodeAt(0)));
+      const oldS = pendingStarterOrig.map((x) => PKDATA.nameOf(x));
+      const hs = r32(d, 4), dataOff = r32(d, 0x10), fatb = hs + r32(d, hs + 4), entOf = (i) => fatb + 12 + r32(d, hs + 12 + i * 4), al4 = (x) => (x + 3) & ~3;
+      let changed = false;
+      const blobs = G.subs.map(([a0, a1], i) => {
+        const keep = d.slice(a0, a0 + r32(d, entOf(i) + 12));
+        const nl = isTxt(d, a0, a1) ? r16(d, a0 + 2) : 0;
+        if (!nl || (nl > maxSp && nl <= maxSp + 120)) return keep; // lijsten per soort (namen, Pokédex, categorieën) niet
+        const lines = txtRead(d, a0); let ch = false;
+        for (const Ln of lines) {
+          const str = String.fromCharCode(...Ln.a.filter((c) => c < 0xE000 && c >= 0x20));
+          if (!oldS.some((n) => str.includes(n)) || oldS.includes(str.trim()) || /[0-9]/.test(str) || /Doll|[Pp]oster|Mask|Plush|Figure/.test(str)) continue; // decoraties/accessoires zijn items
+          const out = []; let i2 = 0;
+          while (i2 < Ln.a.length) { const k = oldA.findIndex((o) => o.every((c, q) => Ln.a[i2 + q] === c)); if (k >= 0) { out.push(...newA[k]); i2 += oldA[k].length; } else out.push(Ln.a[i2++]); }
+          Ln.a = out; ch = true;
+        }
+        if (!ch) return keep;
+        changed = true; return txtWrite(lines);
+      });
+      if (!changed) return;
+      const region = G.size - dataOff, total = blobs.reduce((q, b, i) => q + (r32(d, entOf(i)) ? al4(b.length) : 0), 0);
+      if (total > region) { game.warnings.push('Starternamen in de systeemtekst niet aangepast (geen ruimte)'); return; }
+      const out = new Uint8Array(region); let pos = 0, largest = r32(d, 0x18);
+      blobs.forEach((b, i) => { const e = entOf(i); if (!r32(d, e)) return; out.set(b, pos); U.w32(d, e + 4, pos); U.w32(d, e + 8, pos + al4(b.length)); U.w32(d, e + 12, b.length); largest = Math.max(largest, al4(b.length)); pos += al4(b.length); });
+      d.set(out, dataOff); U.w32(d, 0x18, largest); use(G);
+    };
+    const runFixups = async () => { if (fixed) return; fixed = true; for (const f of fixups) await f(); await starterTextFix(); await sysStarterTextFix(); if (starterScriptFix) await starterScriptFix(); if (zoneFix) await zoneFix(); if (worldFix) { await worldFix(); for (const p of partial) loaded.push(p); } };
 
     // ---- Output: patches + hashes ----
     game.buildPatches = async () => {
