@@ -854,6 +854,22 @@
       return b; };
     const isTxt = (b, o0, e) => e - o0 >= 0x14 && r16(b, o0) === 1 && r32(b, o0 + 8) === 0 && r32(b, o0 + 12) === 0x10;
     const typeWord = (types) => (types[0] === types[1] ? types[0] : types[0] + '/' + types[1]);
+    // Typetabel (Gen 6+): super effectief / niet erg effectief / geen effect, voor de typeles in ORAS
+    const SE = { Fire: 'Grass Ice Bug Steel', Water: 'Fire Ground Rock', Electric: 'Water Flying', Grass: 'Water Ground Rock', Ice: 'Grass Ground Flying Dragon',
+      Fighting: 'Normal Ice Rock Dark Steel', Poison: 'Grass Fairy', Ground: 'Fire Electric Poison Rock Steel', Flying: 'Grass Fighting Bug', Psychic: 'Fighting Poison',
+      Bug: 'Grass Psychic Dark', Rock: 'Fire Ice Flying Bug', Ghost: 'Psychic Ghost', Dragon: 'Dragon', Dark: 'Psychic Ghost', Steel: 'Ice Rock Fairy', Fairy: 'Fighting Dragon Dark', Normal: '' };
+    const NVE = { Normal: 'Rock Steel', Fire: 'Fire Water Rock Dragon', Water: 'Water Grass Dragon', Electric: 'Electric Grass Dragon', Grass: 'Fire Grass Poison Flying Bug Dragon Steel',
+      Ice: 'Fire Water Ice Steel', Fighting: 'Poison Flying Psychic Bug Fairy', Poison: 'Poison Ground Rock Ghost', Ground: 'Grass Bug', Flying: 'Electric Rock Steel', Psychic: 'Psychic Steel',
+      Bug: 'Fire Fighting Poison Flying Ghost Steel Fairy', Rock: 'Fighting Ground Steel', Ghost: 'Dark', Dragon: 'Steel', Dark: 'Fighting Dark Fairy', Steel: 'Fire Water Electric Steel', Fairy: 'Fire Poison Steel' };
+    const IMM = { Normal: 'Ghost', Electric: 'Ground', Fighting: 'Ghost', Poison: 'Steel', Ground: 'Flying', Psychic: 'Dark', Ghost: 'Normal', Dragon: 'Fairy' };
+    const ALLT = Object.keys(SE);
+    const eff = (atk, def) => ((IMM[atk] || '').split(' ').includes(def) ? 0 : SE[atk].split(' ').includes(def) ? 2 : NVE[atk].split(' ').includes(def) ? 0.5 : 1);
+    const typeLesson = (types) => {
+      const own = [...new Set(types)];
+      const strong = ALLT.filter((d) => own.some((a) => eff(a, d) > 1)).slice(0, 3);
+      const weak = ALLT.filter((a) => own.reduce((m, d) => m * eff(a, d), 1) > 1).slice(0, 3);
+      return { strong, weak };
+    };
     const starterTextFix = async () => {
       if (!pendingStarterOrig || !pendingStarterNew || pendingStarterOrig.join() === pendingStarterNew.join()) return;
       const oldN = pendingStarterOrig.map((s) => PKDATA.nameOf(s)), newN = pendingStarterNew.map((s) => PKDATA.nameOf(s));
@@ -869,7 +885,7 @@
         const d = await loadGarc(G); let hits = 0, eng = 0;
         for (const [a0, a1] of G.subs) {
           if (!isTxt(d, a0, a1) || r16(d, a0 + 2) > 300) continue;
-          for (const Ln of txtRead(d, a0)) { const str = String.fromCharCode(...Ln.a); if (oldN.some((nm) => str.includes(nm))) { hits++; if (/-type Pok/.test(str) || / the /.test(str)) eng++; } }
+          for (const Ln of txtRead(d, a0)) { const str = String.fromCharCode(...Ln.a); if (oldN.some((nm) => str.includes(nm))) { hits++; if (/-type Pok| the | type|poster|Doll/.test(str)) eng++; } }
         }
         if (hits && eng && (!best || eng > best.eng)) best = { G, d, eng };
       }
@@ -888,6 +904,19 @@
           if (which.length === 1) {
             const i = which[0];
             for (const t of new Set(oldT[i])) { const from = toA(t + '-type'); let at = find(Ln.a, from, 0); while (at >= 0) { const to = toA(typeWord(newT[i]) + '-type'); Ln.a.splice(at, from.length, ...to); at = find(Ln.a, from, at + to.length); } }
+          }
+          if (which.length === 1) { // ORAS: "is a Grass type." (zonder streepje) + typeles "strong against ... / weak against ..."
+            const i = which[0];
+            for (const t of new Set(oldT[i])) { const from = toA('a ' + t + ' type'); let at = find(Ln.a, from, 0); while (at >= 0) { const to = toA((/^[AEIOU]/.test(typeWord(newT[i])) ? 'an ' : 'a ') + typeWord(newT[i]) + ' type'); Ln.a.splice(at, from.length, ...to); at = find(Ln.a, from, at + to.length); } }
+            let str = String.fromCharCode(...Ln.a);
+            const m1 = /(strong against )([A-Za-z ,]+?)( types?\.)/.exec(str), m2 = /(weak against )([A-Za-z ,]+?)( types?\.)/.exec(str);
+            if (m1 && m2) {
+              const { strong, weak } = typeLesson(newT[i]);
+              const fmt = (l) => (l.length === 1 ? l[0] : l.length === 2 ? l[0] + ' and ' + l[1] : l.slice(0, -1).join(', ') + ', and ' + l[l.length - 1]);
+              str = str.replace(m1[0], strong.length ? m1[1] + fmt(strong) + (strong.length > 1 ? ' types.' : ' types.') : 'strong against no type in particular.');
+              str = str.replace(m2[0], weak.length ? m2[1] + fmt(weak) + ' types.' : 'weak against no type in particular.');
+              Ln.a = [...str].map((ch) => ch.charCodeAt(0));
+            }
           }
           for (const i of which) { const from = toA(oldN[i]); let at = find(Ln.a, from, 0); while (at >= 0) { const to = toA(newN[i]); Ln.a.splice(at, from.length, ...to); at = find(Ln.a, from, at + to.length); } }
           ch = true;
