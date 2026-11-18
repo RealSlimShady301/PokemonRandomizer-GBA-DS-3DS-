@@ -28,7 +28,7 @@
       [/ evolueert nu in /g, ' now evolves into '], [/: ruil -> level 37 /g, ': trade -> level 37 '], [/: ruil met item -> level 37 /g, ': trade with item -> level 37 '],
       [/: ruil met item -> level stijgen terwijl hij (.*) vasthoudt /g, ': trade with item -> level up while holding $1 '],
       [/Item-ball /g, 'Item ball '], [/Verborgen item /g, 'Hidden item '], [/Prijs\/ruil /g, 'Prize/exchange '], [/\(normaal 1 op (\d+)\)/g, '(normal 1 in $1)'], [/^1 op (\d+)/, '1 in $1'],
-      [/\(gras\/grot\)/g, '(grass/cave)'], [/Gras groep (\d+) map (\d+)/g, 'Grass group $1 map $2'], [/Water groep (\d+) map (\d+)/g, 'Water group $1 map $2'], [/\(surfen\)/g, '(surfing)'], [/\(vissen\)/g, '(fishing)'], [/\(rotsen\)/g, '(rock smash)'], [/Gebied /g, 'Area '],
+      [/\(gras\/grot\)/g, '(grass/cave)'], [/\(hoog gras\)/g, '(tall grass)'], [/\(ei\)/g, '(egg)'], [/\(zweven\)/g, '(soaring)'], [/\(fossiel\)/g, '(fossil)'], [/\(ruimte\)/g, '(space)'], [/\(bloemen\)/g, '(flowers)'], [/\(oude hengel\)/g, '(Old Rod)'], [/\(goede hengel\)/g, '(Good Rod)'], [/\(superhengel\)/g, '(Super Rod)'], [/\(horde\)/g, '(horde)'], [/Gras groep (\d+) map (\d+)/g, 'Grass group $1 map $2'], [/Water groep (\d+) map (\d+)/g, 'Water group $1 map $2'], [/\(surfen\)/g, '(surfing)'], [/\(vissen\)/g, '(fishing)'], [/\(rotsen\)/g, '(rock smash)'], [/Gebied /g, 'Area '],
       [/\[belangrijk/g, '[important'], [/, type /g, ', type '], [/ \(was /g, ' (was '], [/^Gift /, 'Gift '], [/ wild: /g, ' wild: '],
     ] : null;
     const L = (s) => { if (EN && typeof s === 'string') for (const [rx, rep] of EN) s = s.replace(rx, rep); log.push(s); };
@@ -544,10 +544,10 @@
       const where = new Map();
       for (const area of game.wild) for (const s of area.slots) {
         if (!where.has(s.species)) where.set(s.species, new Map());
-        const m = where.get(s.species), k = area.label;
+        const m = where.get(s.species), k = area.label + (s.method ? ' (' + s.method + ')' : '');
         const lv = m.get(k) || [999, 0]; lv[0] = Math.min(lv[0], s.min); lv[1] = Math.max(lv[1], s.max); m.set(k, lv);
       }
-      if (game.statics) for (const st of game.statics) { if (!where.has(st.species)) where.set(st.species, new Map()); where.get(st.species).set((st.kind === 'gift' ? 'Gift' : 'Static') + (st.level ? ' Lv' + st.level : ''), null); }
+      if (game.statics) for (const st of game.statics) { if (!where.has(st.species)) where.set(st.species, new Map()); where.get(st.species).set((st.place ? st.place + ' ' : '') + '(' + (st.kind === 'gift' ? 'gift' : 'static') + ')' + (st.level ? ' Lv' + st.level : ''), null); }
       if (game.trades) for (const t of game.trades) { if (!where.has(t.give)) where.set(t.give, new Map()); where.get(t.give).set('Trade (' + nm(t.req) + ')', null); }
       L('--- Waar vang je wat? ---');
       const ids = [...where.keys()].sort((a, b) => ((game.byId.get(a) || {}).dex || a) - ((game.byId.get(b) || {}).dex || b));

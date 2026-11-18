@@ -53,6 +53,7 @@ Bijgehouden zodat dit later nog toegevoegd kan worden. Alles hieronder is **nog 
 
 ## Omega Ruby / Alpha Sapphire
 - Wally's Ralts (zit in een story-script); DexNav.
+- "Waar vang je wat": plaatsnamen + manier (gras, DexNav, surfen, hengels, hordes) zijn er; bij enkele gifts/statics staat nog geen plaats (Kanto-starters Lv10, Lucario, Camerupt/Sharpedo, Togepi-ei, de Lv40/45-statics, Kyogre/Groudon Lv60).
 - Niet in-game getest: TM's (nieuw).
 
 ## Sun / Moon / Ultra Sun / Ultra Moon

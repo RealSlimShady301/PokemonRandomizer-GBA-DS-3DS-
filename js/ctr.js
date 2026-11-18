@@ -489,7 +489,10 @@
         }
         flush();
         if (!slots.length) continue;
-        game.wild.push({ label: 'Zone ' + z, slots: slots.map((q) => ({ species: r16(zd, q) & 0x7FF, min: zd[q + 2], max: zd[q + 3], _o: q })),
+        // ORAS: 0x0E bytes kansen + 61 slots: 12 gras, 12 hoog gras, 3 DexNav, 5 surfen, 5 rotsen, 3+3+3 hengels, 15 hordes
+        const MO = (k) => (k < 12 ? 'gras/grot' : k < 24 ? 'hoog gras' : k < 27 ? 'DexNav' : k < 32 ? 'surfen' : k < 37 ? 'rotsen' : k < 40 ? 'oude hengel' : k < 43 ? 'goede hengel' : k < 46 ? 'superhengel' : 'horde');
+        const fixed = e - s === 0x104;
+        game.wild.push({ label: 'Zone ' + z, slots: slots.map((q) => ({ species: r16(zd, q) & 0x7FF, min: zd[q + 2], max: zd[q + 3], _o: q, method: fixed ? MO((q - s - 0x0E) >> 2) : undefined })),
           commit() {
             const Zn = zoneU.get(z);
             this.slots.forEach((x) => {
@@ -523,7 +526,7 @@
         const u = Zn.u, base = Zn.o3 + 0x10, slots = [];
         for (let k = 0; k < 94; k++) {
           const o = base + k * 4, sp = r16(u, o) & 0x7FF, mn = u[o + 2], mx = u[o + 3];
-          if (sp >= 1 && sp <= maxSp && mn >= 1 && mx >= mn && mx <= 100) slots.push({ species: sp, min: mn, max: mx, _o: o });
+          if (sp >= 1 && sp <= maxSp && mn >= 1 && mx >= mn && mx <= 100) slots.push({ species: sp, min: mn, max: mx, _o: o, method: k < 12 ? 'gras/grot' : k < 48 ? 'bloemen' : k < 60 ? 'hoog gras' : k < 65 ? 'surfen' : k < 70 ? 'rotsen' : k < 73 ? 'oude hengel' : k < 76 ? 'goede hengel' : k < 79 ? 'superhengel' : 'horde' });
         }
         if (!slots.length) continue;
         game.wild.push({ label: 'Zone ' + z, slots, commit() {
@@ -736,6 +739,21 @@
         game.statics.push({ kind: 'static', label: 'Static #' + i, species: r16(c, e), level: c[e + 3], story: (/^0004000000055[DE]00$/.test(titleId) ? [716, 717] : [382, 383, 384, 386]).includes(r16(c, e)), commit() { w16(c, e, this.species); c[e + 2] = 0; } });
       }
       else game.warnings.push('Static encounters niet gevonden');
+      // Plaats van gifts/statics in ORAS (voor het "waar vang je wat"-overzicht), op basis van de originele Pokémon
+      if (!/^0004000000055[DE]00$/.test(titleId)) {
+        const P = {}, put = (pl, ...sp) => sp.forEach((x) => (P[x] = pl));
+        put('Mossdeep City (Steven)', 374); put('Weather Institute', 351); put('Lavaridge Town (ei)', 360);
+        put('Desert Ruins', 377); put('Island Cave', 378, 486); put('Ancient Tomb', 379); put('Sky Pillar', 384); put('Delta Episode (ruimte)', 386);
+        put('Route 119/120', 352); put('New Mauville', 100); put('Team Aqua/Magma Hideout', 101); put('Contest Spectacular (Cosplay Pikachu)', 25);
+        put('Rustboro City (fossiel)', 345, 347, 138, 140, 142, 410, 408, 564, 566, 696, 698);
+        put('Littleroot Town (Prof. Birch)', 152, 155, 158, 387, 390, 393, 495, 498, 501);
+        put('Mirage spot (zweven)', 641, 642, 645, 483, 484, 487, 243, 244, 245, 638, 639, 640, 480, 481, 482, 643, 644, 646, 249, 250, 485, 488);
+        for (const st of game.statics) {
+          const sp = st.species, lv = st.level;
+          st.place = (sp === 380 || sp === 381) ? (lv === 30 ? 'Southern Island' : undefined) : (sp === 382 || sp === 383) ? (lv === 45 ? 'Cave of Origin' : undefined)
+            : (sp === 25 && st.kind !== 'gift') ? undefined : P[sp];
+        }
+      }
 
       // Tabel in de programmacode (nummer 1..6 -> soort) die o.a. gebruikt wordt voor de naam van je starter in teksten/cutscenes
       pendingStarterOrig = orig.slice();
