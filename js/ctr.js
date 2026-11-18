@@ -492,7 +492,7 @@
         // ORAS: 0x0E bytes kansen + 61 slots: 12 gras, 12 hoog gras, 3 DexNav, 5 surfen, 5 rotsen, 3+3+3 hengels, 15 hordes
         const MO = (k) => (k < 12 ? 'gras/grot' : k < 24 ? 'hoog gras' : k < 27 ? 'DexNav' : k < 32 ? 'surfen' : k < 37 ? 'rotsen' : k < 40 ? 'oude hengel' : k < 43 ? 'goede hengel' : k < 46 ? 'superhengel' : 'horde');
         const fixed = e - s === 0x104;
-        game.wild.push({ label: 'Zone ' + z, slots: slots.map((q) => ({ species: r16(zd, q) & 0x7FF, min: zd[q + 2], max: zd[q + 3], _o: q, method: fixed ? MO((q - s - 0x0E) >> 2) : undefined })),
+        game.wild.push({ label: 'Zone ' + z, slots: slots.map((q) => ({ species: r16(zd, q) & 0x7FF, _f: r16(zd, q) >> 11, min: zd[q + 2], max: zd[q + 3], _o: q, method: fixed ? MO((q - s - 0x0E) >> 2) : undefined })),
           commit() {
             const Zn = zoneU.get(z);
             this.slots.forEach((x) => {

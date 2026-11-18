@@ -93,6 +93,7 @@
     'Versturen naar 3DS ({0})…': 'Sending to 3DS ({0})…', 'Klaar! {0} bestanden op je 3DS gezet. Sluit FTPD en start het spel.': 'Done! {0} files put on your 3DS. Close FTPD and start the game.',
     'Fout: {0}': 'Error: {0}',
     'Andere vormen kunnen voorkomen: gefuseerde Kyurem (White/Black), Zygarde 10%/Power Construct/Complete (Sun/Moon), Necrozma Dusk Mane/Dawn Wings/Ultra (Ultra Sun/Moon)': 'Alternate forms can appear: fused Kyurem (White/Black), Zygarde 10%/Power Construct/Complete (Sun/Moon), Necrozma Dusk Mane/Dawn Wings/Ultra (Ultra Sun/Moon)',
+    'Testmodus: nieuwe vormen en extra legendaries meteen op de eerste route (Lv5, makkelijk te vangen)': 'Test mode: new forms and extra legendaries right on the first route (Lv5, easy to catch)',
     'Preset': 'Preset', 'Klassiek': 'Classic', 'Chaos': 'Chaos', 'Nuzlocke-vriendelijk': 'Nuzlocke-friendly', 'Standaard': 'Default',
     'Instellingencode kopiëren': 'Copy settings code', 'Code laden': 'Load code', 'Overzicht "waar vang je wat?" in de log': '"Where to catch what" overview in the log',
     'Evolutie-levels willekeurig (ongeveer ±30%)': 'Random evolution levels (about ±30%)', 'Preset "{0}" toegepast.': 'Preset "{0}" applied.',

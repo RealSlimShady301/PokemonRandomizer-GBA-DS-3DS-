@@ -28,7 +28,7 @@
       [/ evolueert nu in /g, ' now evolves into '], [/: ruil -> level 37 /g, ': trade -> level 37 '], [/: ruil met item -> level 37 /g, ': trade with item -> level 37 '],
       [/: ruil met item -> level stijgen terwijl hij (.*) vasthoudt /g, ': trade with item -> level up while holding $1 '],
       [/Item-ball /g, 'Item ball '], [/Verborgen item /g, 'Hidden item '], [/Prijs\/ruil /g, 'Prize/exchange '], [/\(normaal 1 op (\d+)\)/g, '(normal 1 in $1)'], [/^1 op (\d+)/, '1 in $1'],
-      [/\(gras\/grot\)/g, '(grass/cave)'], [/\(hoog gras\)/g, '(tall grass)'], [/\(ei\)/g, '(egg)'], [/\(zweven\)/g, '(soaring)'], [/\(fossiel\)/g, '(fossil)'], [/\(ruimte\)/g, '(space)'], [/\(vogelzwerm\)/g, '(bird flock)'], [/^--- Andere vormen ---$/, '--- Alternate forms ---'], [/^--- Legendaries van de andere versie \(nodig voor Mirage spots\) ---$/, '--- Legendaries from the other version (needed for Mirage spots) ---'], [/zeldzaam\)/g, 'rare)'], [/\(geen: de Pokémon met andere vormen kwamen deze keer niet voor\)/, '(none: the Pokémon with other forms did not appear this time)'], [/\(beschermd: nodig voor /g, '(protected: needed for '], [/\(beschermd: story\)/g, '(protected: story)'], [/Zweven \(/g, 'Soaring ('], [/ bij Dewford /g, ' near Dewford '], [/(^|· )bij Fortree/g, '$1near Fortree'], [/niet gebruikt in het spel/g, 'not used in the game'], [/\(bloemen\)/g, '(flowers)'], [/\(oude hengel\)/g, '(Old Rod)'], [/\(goede hengel\)/g, '(Good Rod)'], [/\(superhengel\)/g, '(Super Rod)'], [/\(horde\)/g, '(horde)'], [/Gras groep (\d+) map (\d+)/g, 'Grass group $1 map $2'], [/Water groep (\d+) map (\d+)/g, 'Water group $1 map $2'], [/\(surfen\)/g, '(surfing)'], [/\(vissen\)/g, '(fishing)'], [/\(rotsen\)/g, '(rock smash)'], [/Gebied /g, 'Area '],
+      [/\(gras\/grot\)/g, '(grass/cave)'], [/\(hoog gras\)/g, '(tall grass)'], [/\(ei\)/g, '(egg)'], [/\(zweven\)/g, '(soaring)'], [/\(fossiel\)/g, '(fossil)'], [/\(ruimte\)/g, '(space)'], [/\(vogelzwerm\)/g, '(bird flock)'], [/^--- Andere vormen ---$/, '--- Alternate forms ---'], [/^--- Testmodus: (.*) ---$/, '--- Test mode: $1 ---'], [/^--- Legendaries van de andere versie \(nodig voor Mirage spots\) ---$/, '--- Legendaries from the other version (needed for Mirage spots) ---'], [/zeldzaam\)/g, 'rare)'], [/\(geen: de Pokémon met andere vormen kwamen deze keer niet voor\)/, '(none: the Pokémon with other forms did not appear this time)'], [/\(beschermd: nodig voor /g, '(protected: needed for '], [/\(beschermd: story\)/g, '(protected: story)'], [/Zweven \(/g, 'Soaring ('], [/ bij Dewford /g, ' near Dewford '], [/(^|· )bij Fortree/g, '$1near Fortree'], [/niet gebruikt in het spel/g, 'not used in the game'], [/\(bloemen\)/g, '(flowers)'], [/\(oude hengel\)/g, '(Old Rod)'], [/\(goede hengel\)/g, '(Good Rod)'], [/\(superhengel\)/g, '(Super Rod)'], [/\(horde\)/g, '(horde)'], [/Gras groep (\d+) map (\d+)/g, 'Grass group $1 map $2'], [/Water groep (\d+) map (\d+)/g, 'Water group $1 map $2'], [/\(surfen\)/g, '(surfing)'], [/\(vissen\)/g, '(fishing)'], [/\(rotsen\)/g, '(rock smash)'], [/Gebied /g, 'Area '],
       [/\[belangrijk/g, '[important'], [/, type /g, ', type '], [/ \(was /g, ' (was '], [/^Gift /, 'Gift '], [/ wild: /g, ' wild: '],
     ] : null;
     const L = (s) => { if (EN && typeof s === 'string') for (const [rx, rep] of EN) s = s.replace(rx, rep); log.push(s); };
@@ -582,6 +582,25 @@
       if (game.statics) for (const st of game.statics) if (AF[st.species] && !st.story) { st.form = pickForm(st.species); st.commit(); if (st.form) lines.push(fn(st.species, st.form) + ': ' + (st.place || st.label)); }
       for (const t of game.trainers) { let ch = false; for (const m of t.mons) if (AF[m.species]) { m.form = pickForm(m.species); ch = true; if (m.form) lines.push(fn(m.species, m.form) + ': ' + t.label); } if (ch) t.commit(); }
       L('--- Andere vormen ---'); (lines.length ? lines : ['(geen: de Pokémon met andere vormen kwamen deze keer niet voor)']).forEach(L); L('');
+    }
+
+    // ---------- Testmodus: het nieuwe meteen op de eerste route (Lv5, catch rate 255), om snel te kunnen testen ----------
+    if (opt.testMode && game.wild.length) {
+      const want = [];
+      if (game.versionExtras) game.versionExtras.species.forEach((s) => want.push([s, 0]));
+      if (game.altForms) for (const [s, fs] of Object.entries(game.altForms)) { want.push([+s, 0]); for (const f of Object.keys(fs)) want.push([+s, +f]); }
+      const first = ['Route 101', 'Route 2', 'Route 1', 'Route 201', 'Route 29'];
+      let A = null; for (const lab of first) { A = game.wild.find((w) => w.label === lab && w.slots.length >= 6); if (A) break; }
+      if (!A) A = game.wild.filter((w) => w.slots.length >= 6).sort((a, b) => Math.max(...a.slots.map((x) => x.max)) - Math.max(...b.slots.map((x) => x.max)))[0];
+      if (A && want.length) {
+        const grass = A.slots.filter((x) => !x.method || x.method === 'gras/grot'), use = grass.length >= 6 ? grass : A.slots;
+        L('--- Testmodus: ' + A.label + ' (Lv5) ---');
+        use.forEach((x, i) => { const [s, f] = want[i % want.length]; x.species = s; x.form = f; x.min = x.max = 5; });
+        A.commit();
+        const AF = game.altForms || {};
+        want.forEach(([s, f]) => { const o = game.byId.get(s); if (o && o.catchRate !== undefined) { o.catchRate = 255; game.commitSpecies(o); } L('  ' + ((f && AF[s] && AF[s][f]) || nm(s))); });
+        L('');
+      }
     }
 
     game.finalize();

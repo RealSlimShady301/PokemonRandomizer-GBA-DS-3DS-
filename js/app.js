@@ -224,7 +224,7 @@
           learnsets: radio('learnsets'), firstMoveDamaging: chk('firstMoveDamaging'), noHmInLearnset: chk('noHmInLearnset'),
           tms: chk('tms'), tmCompat: radio('tmCompat'), tmCompatPct: num('tmCompatPct'),
           statics: radio('statics'), staticLegSwap: chk('staticLegSwap'), giftsToo: chk('giftsToo'), protectStory: chk('protectStory'), weakenStory: chk('weakenStory'), trades: chk('trades'), tradeReqToo: chk('tradeReqToo'), tradeNoLeg: chk('tradeNoLeg'), eggs: chk('eggs'), eggNoLeg: chk('eggNoLeg'), eggBasic: chk('eggBasic'),
-          fixTradeEvos: chk('fixTradeEvos'), altForms: chk('altForms'), randomEvos: chk('randomEvos'), monotype: $('monotype').value,
+          fixTradeEvos: chk('fixTradeEvos'), testMode: chk('testMode'), altForms: chk('altForms'), randomEvos: chk('randomEvos'), monotype: $('monotype').value,
           wildHeldItems: chk('wildHeldItems'), marts: chk('marts'), strongTrainers: chk('strongTrainers'), keepGymTypes: chk('keepGymTypes'), bossItems: chk('bossItems'),
           fieldItems: radio('fieldItems'), keepFieldTMs: chk('keepFieldTMs'),
           evoLevels: chk('evoLevels'), catchList: chk('catchList'), lang: window.I18N ? I18N.lang : 'nl',
