@@ -52,7 +52,8 @@ Eerder besproken en toen bewust uitgesteld; om later opnieuw te bekijken:
 
 ## 4. Ideeën voor later
 
-- **Plaatsnamen** in het "waar vang je wat"-overzicht voor DS- en 3DS-games (nu nog gebiedsnummers; GBA heeft al echte namen).
+- **Plaatsnamen** in het "waar vang je wat"-overzicht voor DS-games en Sun/Moon (nu nog gebiedsnummers; GBA, X/Y en ORAS hebben al echte namen).
+- **Pokédex-gebiedskaart** voor Zwart/Wit (1/2): de game bewaart die als kant-en-klare afbeeldingen per Pokémon; die zouden opnieuw getekend moeten worden.
 - **Log volledig in het Engels** (kopjes en vaste zinnen zijn al vertaald).
 - **Meer talen** voor de website (Duits, Frans, Spaans…): alleen een woordenboek toevoegen in `js/i18n.js`.
 - **Herkennen van een al gerandomizede ROM** met een waarschuwing.
@@ -67,3 +68,5 @@ Eerder besproken en toen bewust uitgesteld; om later opnieuw te bekijken:
 - Overzicht **"waar vang je wat?"** in de log (wild, gifts, statics, trades).
 - **Willekeurige evoluties** en **willekeurige evolutie-levels** op elke game.
 - Website meertalig (Engels/Nederlands).
+- **Plaatsnamen** voor X/Y en ORAS in het "waar vang je wat"-overzicht.
+- **Pokédex-gebiedskaart** klopt met de nieuwe wilde Pokémon in Diamond/Pearl/Platinum en HeartGold/SoulSilver (GB/GBA berekenen dit zelf uit de wilde data).

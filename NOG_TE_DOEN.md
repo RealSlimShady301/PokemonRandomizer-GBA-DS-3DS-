@@ -24,6 +24,7 @@ Bijgehouden zodat dit later nog toegevoegd kan worden. Alles hieronder is **nog 
 - Gifts/statics: Eevee, Porygon en de meeste legendaries zijn ingebouwd; Dialga/Palkia op Spear Pillar, Togepi-ei, fossielen en Rotom nog niet (andere scriptvorm).
 - Poké Marts (lijsten niet gevonden in de code) en verborgen items.
 - Daycare-eieren; Great Marsh-dagelijkse Pokémon; honingbomen.
+- Pokédex-gebiedskaart: wordt bijgewerkt, maar zonder onderscheid ochtend/dag/nacht (elke nieuwe Pokémon staat op alle tijdstippen).
 - Niet in-game getest: wilde Pokémon, starters, TM's, trades, items in het veld.
 
 ## HeartGold / SoulSilver
@@ -38,6 +39,7 @@ Bijgehouden zodat dit later nog toegevoegd kan worden. Alles hieronder is **nog 
 - Static encounters zijn ingebouwd (Reshiram/Zekrom in Zwart/Wit beschermd); gift-Pokémon (aapjes, fossielen, Zorua...) nog niet.
 - Poké Marts; NPC-items (andere scriptvorm).
 - Hidden grottos; Join Avenue.
+- Pokédex-gebiedskaart ("habitat") toont nog de originele plaatsen: de game bewaart ze als afbeeldingen.
 - Starternaam: alleen het keuzescherm; teksten in de Striaton-gym-quiz noemen nog de originele starters.
 - Starter-keuzescherm: script-aanpassing is experimenteel.
 - "NDSi Enhanced": op een echte DSi/3DS in DSi-modus kan de aangepaste code geweigerd worden; emulators en DS-modus zijn ok.
@@ -45,6 +47,7 @@ Bijgehouden zodat dit later nog toegevoegd kan worden. Alles hieronder is **nog 
 
 ## X / Y
 - Friend Safari; hordes zijn nu 5 verschillende Pokémon.
+- Pokédex-gebied: niet nagekeken of de game dit zelf uit de wilde data haalt (ORAS: de gezamenlijke encountertabel wordt mee aangepast).
 - Starternaam: Tierno's quiz (lengte/gewicht) blijft over de originele starters gaan; Shauna's opmerking ook.
 - Niet in-game getest: wilde Pokémon, statics, starters, TM's.
 

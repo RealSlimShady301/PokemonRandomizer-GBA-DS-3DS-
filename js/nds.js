@@ -549,8 +549,57 @@
       w16(rom, 0x15E, crc16(rom, 0, 0x15E)); // header-CRC
     };
 
+    // ---- Pokédex-gebiedskaart (DPPt + HGSS): per soort en categorie een lijst met kaartcellen ----
+    // DPPt: bestand = 4 + categorie*MS + soort (0-2 grot ochtend/dag/nacht, 3/4 grot speciaal, 5-7 veld, 8/9 veld speciaal)
+    // HGSS: bestand = 2 + categorie*MS + soort (0-2 grot, 3-5 veld, 6 grot speciaal, 7 veld speciaal, bv. Headbutt)
+    // Welke cellen bij welk gebied horen wordt afgeleid uit de originele data: het gebied krijgt de cel(len)
+    // waar de meeste van zijn originele soorten staan.
+    let writeDexArea = () => {};
+    const DEXCFG = { ADA: ['application/zukanlist/zkn_data/zukan_enc_diamond.narc', 4, 10, [['d', [0, 1, 2], [3, 4]], ['f', [5, 6, 7], [8, 9]]]],
+      APA: ['application/zukanlist/zkn_data/zukan_enc_pearl.narc', 4, 10, [['d', [0, 1, 2], [3, 4]], ['f', [5, 6, 7], [8, 9]]]],
+      CPU: ['application/zukanlist/zkn_data/zukan_enc_platinum.narc', 4, 10, [['d', [0, 1, 2], [3, 4]], ['f', [5, 6, 7], [8, 9]]]],
+      IPK: ['a/1/3/3', 2, 8, [['d', [0, 1, 2], [6]], ['f', [3, 4, 5], [7]]]], IPG: ['a/1/3/3', 2, 8, [['d', [0, 1, 2], [6]], ['f', [3, 4, 5], [7]]]] }[code3];
+    if (DEXCFG && fs.files[DEXCFG[0]] !== undefined && game.wild.length) try {
+      const [dexPath, H, C, GR] = DEXCFG, [ds, de] = fs.range(fs.files[dexPath]), subs = narc(rom, ds, de);
+      if (subs && (subs.length - H) % C === 0) {
+        const MS = (subs.length - H) / C, list = (i) => { const [a, b] = subs[i], out = []; for (let o = a; o + 4 <= b; o += 4) { const v = r32u(o); if (v) out.push(v); } return out; };
+        const Sc = new Map(), add = (k, sp) => { if (!Sc.has(k)) Sc.set(k, new Set()); Sc.get(k).add(sp); };
+        for (let sp = 1; sp < MS; sp++) for (const [G, nc, sc] of GR) { for (const c of nc) for (const x of list(H + c * MS + sp)) add(G + 'n' + x, sp); for (const c of sc) for (const x of list(H + c * MS + sp)) add(G + 's' + x, sp); }
+        const keys = [...Sc.keys()];
+        const areas = game.wild.map((A) => new Set(A.slots.map((x) => x.species).filter((v) => v < MS)));
+        const score = (A, k) => { let n = 0; for (const v of A) if (Sc.get(k).has(v)) n++; return A.size ? n / A.size : 0; };
+        const cand = areas.map((A) => { let best = 0; for (const k of keys) best = Math.max(best, score(A, k)); return best < 0.5 ? [] : keys.filter((k) => score(A, k) >= best - 1e-9); });
+        const asg = cand.map((c) => (c.length === 1 ? c : null));
+        for (let it = 0; it < 5; it++) for (let i = 0; i < areas.length; i++) {
+          if (asg[i]) continue;
+          const keep = cand[i].filter((k) => { const cov = new Set(); asg.forEach((a, j) => { if (a && a.includes(k)) areas[j].forEach((v) => cov.add(v)); }); return [...areas[i]].some((v) => !cov.has(v)); });
+          if ((keep.length && keep.length < cand[i].length) || it === 4) asg[i] = keep.length ? keep : cand[i];
+        }
+        const owned = new Set(asg.flat().filter(Boolean)); // cellen die door een (gerandomized) gebied verklaard worden
+        const sig = () => game.wild.map((A) => A.slots.map((x) => x.species).join(',')).join(';'), sig0 = sig();
+        writeDexArea = () => {
+          if (sig() === sig0) return;
+          const per = new Map();
+          game.wild.forEach((A, i) => { for (const x of A.slots) { if (x.species >= MS) continue; if (!per.has(x.species)) per.set(x.species, new Set()); (asg[i] || []).forEach((k) => per.get(x.species).add(k)); } });
+          const files = subs.map(([a, b]) => rom.slice(a, b));
+          const enc = (cells) => { const d = new Uint8Array((cells.length + 1) * 4); cells.forEach((v, j) => U.w32(d, j * 4, v)); return d; };
+          for (let sp = 1; sp < MS; sp++) for (const [G, nc, sc] of GR) {
+            const mine = [...(per.get(sp) || [])];
+            const norm = mine.filter((k) => k.startsWith(G + 'n')).map((k) => +k.slice(2)).sort((x, y) => x - y);
+            for (const c of nc) files[H + c * MS + sp] = enc(norm);
+            for (const c of sc) { // speciale lijst: nieuwe cellen + originele cellen die niet uit een gerandomized gebied komen (bv. honingbomen)
+              const keep = list(H + c * MS + sp).filter((x) => !owned.has(G + 's' + x));
+              const sp2 = [...new Set([...keep, ...mine.filter((k) => k.startsWith(G + 's')).map((k) => +k.slice(2))])].sort((x, y) => x - y);
+              files[H + c * MS + sp] = enc(sp2);
+            }
+          }
+          placeNarc(dexPath, narcBuild(files));
+        };
+      }
+    } catch (e) { /* gebiedskaart blijft origineel */ }
+
     game._fs = fs; game._narcs = narcs;
-    game.finalize = () => { writeStarterText(); writeArm9(); };
+    game.finalize = () => { writeStarterText(); writeDexArea(); writeArm9(); };
     return game;
   }
 

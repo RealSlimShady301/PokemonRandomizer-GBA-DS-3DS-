@@ -222,13 +222,14 @@
     };
     let textG = null;
     for (const G of garcs) {
-      if ((game.itemNames && game.moveNames && game.abilityNames) || G.subs.length < 100 || G.subs.length > 400) continue;
-      for (let i = 0; i < G.subs.length && !(game.itemNames && game.moveNames && game.abilityNames); i++) {
+      if ((game.itemNames && game.moveNames && game.abilityNames && game.metNames) || G.subs.length < 100 || G.subs.length > 400) continue;
+      for (let i = 0; i < G.subs.length && !(game.itemNames && game.moveNames && game.abilityNames && game.metNames); i++) {
         const [s, e] = G.subs[i]; if (e - s < 0x20 || e - s > 60000) continue;
         const t = decText(await reader.read(G.off + s, e - s)); if (!t || t.length < 150) continue;
         if (!game.moveNames && t[1] === 'Pound' && t[2] === 'Karate Chop') { game.moveNames = t; textG = G; }
         if (!game.itemNames && t[1] === 'Master Ball' && t[3] === 'Great Ball') game.itemNames = t;
         if (!game.abilityNames && t[1] === 'Stench' && t[2] === 'Drizzle') game.abilityNames = t;
+        if (!game.metNames && t.length > 150 && t.length < 1000 && t.includes('Mystery Zone') && (t.includes('Littleroot Town') || t.includes('Vaniville Town') || t.includes('Iki Town'))) game.metNames = t;
       }
     }
 
@@ -409,13 +410,13 @@
     } else game.warnings.push('Trainerdata niet gevonden');
 
     // ---- Wilde Pokémon (ORAS: zone-bestanden + "EN"-kopie achteraan in het zone-archief) ----
-    let zoneFix = null;
+    let zoneFix = null, wildZoneG = null;
     for (const G of garcs) {
       const last = G.subs.length - 1; if (last < 1) continue;
       const p = await prefix(G, last, 4);
       if (!p || p[0] !== 0x45 || p[1] !== 0x4E || r16(p, 2) !== last - 1 && r16(p, 2) !== last) continue;
       const [zs, ze] = G.subs[last];
-      const gd = await loadGarc(G); const zd = gd.subarray(zs, ze); use(G);
+      const gd = await loadGarc(G); const zd = gd.subarray(zs, ze); use(G); wildZoneG = G;
       const zones = r16(zd, 2);
       // Het spel leest de encounters uit de (LZ11-gecomprimeerde) zone-bestanden zelf; het EN-bestand is een kopie.
       const zoneU = new Map(), dirty = new Set();
@@ -515,7 +516,7 @@
         zoneU.set(z, { u, o3 });
       }
       if (zoneU.size < 50) continue;
-      use(G);
+      use(G); wildZoneG = G;
       const dirty = new Set(), dataOff = r32(gd, 0x10), hs = r32(gd, 4), fatb = hs + r32(gd, hs + 4);
       const fatEntry = (i) => fatb + 12 + r32(gd, hs + 12 + i * 4);
       for (const [z, Zn] of zoneU) {
@@ -646,6 +647,18 @@
           }
           if (perArea) game.warnings.push(perArea + ' gebieden: elke soort is daar overal door dezelfde willekeurige soort vervangen (anders past het niet in de ROM; de log kan daar afwijken)');
         };
+      }
+    }
+    // Plaatsnamen voor de gebieden (X/Y/ORAS): zonedata (0x38 bytes per zone) staat achteraan in het zone-archief
+    if (game.metNames && wildZoneG && game.wild.some((w) => /^Zone \d+$/.test(w.label))) {
+      const G = wildZoneG, n = G.subs.length;
+      for (const i of [n - 1, n - 2]) {
+        const [a, b] = G.subs[i]; if ((b - a) % 0x38 || (b - a) / 0x38 < n - 3 || (b - a) / 0x38 > n) continue;
+        const zd = await reader.read(G.off + a, b - a), cnt = (b - a) / 0x38;
+        const nameOf = (z) => z < cnt ? game.metNames[r16(zd, z * 0x38 + 0x1C) & 0x1FF] : null;
+        if (!/Town|Route|City/.test(nameOf(0) || '') && !game.wild.some((w) => /Route/.test(nameOf(+w.label.slice(5)) || ''))) continue;
+        for (const w of game.wild) { const m = /^Zone (\d+)$/.exec(w.label), nmz = m && nameOf(+m[1]); if (nmz) w.label = nmz; }
+        break;
       }
     }
     if (!game.wild.length) game.warnings.push('Wilde Pokémon niet gevonden in deze 3DS-game');
