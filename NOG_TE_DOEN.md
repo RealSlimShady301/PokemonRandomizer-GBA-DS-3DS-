@@ -55,6 +55,8 @@ Bijgehouden zodat dit later nog toegevoegd kan worden. Alles hieronder is **nog 
 - Wally's Ralts (zit in een story-script); DexNav.
 - "Waar vang je wat": alleen bij Kyogre/Groudon Lv60 en Wurmple Lv3 (static) is de plaats onbekend. Kanto-starters Lv10 en Lucario Lv32 staan in de gift-tabel maar worden in het spel niet gebruikt.
 - Mirage spots: met story-bescherming blijven de Pokémon die een andere spot openen dezelfde (Uxie/Mesprit/Azelf, Dialga/Palkia, Reshiram/Zekrom, Lugia/Ho-Oh); zonder bescherming kunnen Giratina, Kyurem en de beasts onbereikbaar worden. Giratina en Kyurem vragen ook in het origineel beide versies (ruilen).
+- In-game getest (TEST4): starternaam in Birch's lab ("received Glalie"), White Kyurem, Groudon en Tornadus op Route 101 (testmodus).
+- Typeles van je rivaal: noemt zo nodig maar 1 type sterk/zwak, omdat de tekst op zijn originele plek moet passen.
 - Niet in-game getest: TM's (nieuw).
 
 ## Sun / Moon / Ultra Sun / Ultra Moon
