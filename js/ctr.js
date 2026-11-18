@@ -359,7 +359,7 @@
         const mons = [];
         for (let m = 0; m < c; m++) {
           const b = ps + m * es;
-          mons.push({ species: r16(bd, b + 4) & 0x7FF, level: bd[b + 2], _b: b, iv: bd[b], item: es % 8 === 2 ? r16(bd, b + 8) : null,
+          mons.push({ species: r16(bd, b + 4) & 0x7FF, _f: r16(bd, b + 6), level: bd[b + 2], _b: b, iv: bd[b], item: es % 8 === 2 ? r16(bd, b + 8) : null,
             moves: hasMoves ? [0, 1, 2, 3].map((q) => r16(bd, b + mvOff + q * 2)) : null });
         }
         if (mons.some((m) => m.species < 1 || m.species > maxSp)) continue;
@@ -391,7 +391,7 @@
           const mons = [];
           for (let m = 0; m < c; m++) {
             const b = ps + m * 32;
-            mons.push({ species: r16(bd, b + 0x10), level: r16(bd, b + 0xE), _b: b, iv: (r32(bd, b + 8) & 0x1F) * 8, item: r16(bd, b + 0x14), moves: [0, 1, 2, 3].map((q) => r16(bd, b + 0x18 + q * 2)) });
+            mons.push({ species: r16(bd, b + 0x10), _f: r16(bd, b + 0x12), level: r16(bd, b + 0xE), _b: b, iv: (r32(bd, b + 8) & 0x1F) * 8, item: r16(bd, b + 0x14), moves: [0, 1, 2, 3].map((q) => r16(bd, b + 0x18 + q * 2)) });
           }
           if (mons.some((m) => m.species < 1 || m.species > maxSp)) continue;
           const bag = [0, 1, 2, 3].map((q) => r16(ad, ta + 4 + q * 2));
@@ -593,7 +593,7 @@
               for (let q = 0; q < 90; q++) {
                 const o = t + 0x10 + q * 4, sp = r16(u, o) & 0x7FF;
                 if (sp < 1 || sp > maxSp) continue;
-                slots.push({ species: sp, min: mn, max: mx, _o: o, _t: t, _orig: sp });
+                slots.push({ species: sp, _f: r16(u, o) >> 11, min: mn, max: mx, _o: o, _t: t, _orig: sp });
               }
               if (!slots.length) continue;
               const W = { label: 'Gebied ' + ((i - 9) / 11) + '-' + k, slots, commit() {
@@ -641,7 +641,7 @@
             // (grote buren opnieuw inpakken is te traag, dus: per gebied vervangen)
             // past niet (willekeurige slots comprimeren slechter): per gebied dezelfde vervanging voor elke originele soort
             const map = new Map();
-            for (const W of A.tables) for (const x of W.slots) { if (!map.has(x._orig)) map.set(x._orig, x.species); x.species = map.get(x._orig); w16(A.u, x._o, x.species); }
+            for (const W of A.tables) for (const x of W.slots) { if (!map.has(x._orig)) map.set(x._orig, [x.species, x.form || 0]); [x.species, x.form] = map.get(x._orig); w16(A.u, x._o, x.species | (x.form << 11)); }
             c = A.comp ? lz11Enc(A.u) : A.u; perArea++;
             if (Gr && place(Gr, A, c)) continue;
             // laatste redmiddel: origineel laten
@@ -811,7 +811,7 @@
         const [s0, s1] = G.subs[1];
         for (let o = s0; o + 0x38 <= s1; o += 0x38) {
           const sp = r16(d, o); if (sp < 1 || sp > maxSp) continue;
-          game.statics.push({ kind: 'static', label: 'Static', species: sp, level: d[o + 3], story: STORY.includes(sp), commit() { w16(d, o, this.species); d[o + 2] = this.form || 0; } });
+          game.statics.push({ kind: 'static', label: 'Static', species: sp, _f: d[o + 2], level: d[o + 3], story: STORY.includes(sp), commit() { w16(d, o, this.species); d[o + 2] = this.form || 0; } });
         }
         if (G.subs.length > 4) {
           const [t0, t1] = G.subs[4];
@@ -1249,8 +1249,8 @@
     game.titleId = titleId;
     // Andere (blijvende) vormen die de randomizer mag kiezen: gefuseerde Kyurem, Zygarde 10%/Power Construct (Gen 7), Necrozma Dusk Mane/Dawn Wings (USUM)
     game.altForms = { 646: { 1: 'White Kyurem', 2: 'Black Kyurem' } };
-    if (isG7) game.altForms[718] = { 1: 'Zygarde 10%', 2: 'Zygarde 10% (Power Construct)', 3: 'Zygarde 50% (Power Construct)' };
-    if (isUSUM) game.altForms[800] = { 1: 'Dusk Mane Necrozma', 2: 'Dawn Wings Necrozma' };
+    if (isG7) game.altForms[718] = { 1: 'Zygarde 10%', 2: 'Zygarde 10% (Power Construct)', 3: 'Zygarde 50% (Power Construct)', 4: 'Zygarde Complete' };
+    if (isUSUM) game.altForms[800] = { 1: 'Dusk Mane Necrozma', 2: 'Dawn Wings Necrozma', 3: 'Ultra Necrozma' };
     // ORAS: legendaries van de andere versie die nodig zijn om een Mirage spot te openen (Giratina, Kyurem, Landorus) + de andere weer-legendary
     if (titleId === '000400000011C500') game.versionExtras = { species: [484, 643, 383, 641], areas: ['Sky Pillar', 'Victory Road'] };
     if (titleId === '000400000011C400') game.versionExtras = { species: [483, 644, 382, 642], areas: ['Sky Pillar', 'Victory Road'] };

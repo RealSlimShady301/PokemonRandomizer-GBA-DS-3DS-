@@ -207,7 +207,7 @@
           this.mons.forEach((m) => {
             rom[m._b] = m.iv; if (m.item !== null) w16(rom, m._b + (gen === 4 ? 6 : 8), m.item);
             w16(rom, m._b + 4, m.species); // vorm-bits gewist
-            if (gen === 5) w16(rom, m._b + 6, 0);
+            if (gen === 5) w16(rom, m._b + 6, m.form || 0); // vorm (bv. White/Black Kyurem)
             rom[m._b + 2] = U.clamp(m.level, 1, 100);
             if (m.moves) m.moves.forEach((v, q) => w16(rom, m._b + mvOff + q * 2, v));
           }); } });
@@ -240,8 +240,8 @@
       IPK: 'a/0/3/7', IPG: 'a/0/3/7', IRB: 'a/1/2/6', IRA: 'a/1/2/6', IRE: 'a/1/2/7', IRD: 'a/1/2/7' }[code3];
     const encN = encPath && narcAt(encPath);
     // slot-helpers: elk slot weet zelf hoe het geschreven wordt
-    const slotLvl = (spOff, spSize, lvMin, lvMax) => ({ species: spSize === 4 ? r32u(spOff) : r16(rom, spOff) & (gen === 5 ? 0x7FF : 0xFFFF), min: rom[lvMin], max: rom[lvMax],
-      _put(s) { if (spSize === 4) w32(spOff, s.species); else w16(rom, spOff, s.species); rom[lvMin] = U.clamp(s.min, 1, 100); rom[lvMax] = U.clamp(Math.max(s.min, s.max), 1, 100); } });
+    const slotLvl = (spOff, spSize, lvMin, lvMax) => ({ _off: spOff, species: spSize === 4 ? r32u(spOff) : r16(rom, spOff) & (gen === 5 ? 0x7FF : 0xFFFF), min: rom[lvMin], max: rom[lvMax],
+      _put(s) { if (spSize === 4) w32(spOff, s.species); else w16(rom, spOff, gen === 5 ? s.species | ((s.form || 0) << 11) : s.species); rom[lvMin] = U.clamp(s.min, 1, 100); rom[lvMax] = U.clamp(Math.max(s.min, s.max), 1, 100); } });
     const slotSp = (spOff, spSize, lv) => ({ species: spSize === 4 ? r32u(spOff) : r16(rom, spOff), min: lv || 50, max: lv || 50, // geen eigen level: onbekend
       _put(s) { if (spSize === 4) w32(spOff, s.species); else w16(rom, spOff, s.species); } });
     if (encN) {
@@ -598,6 +598,8 @@
       }
     } catch (e) { /* gebiedskaart blijft origineel */ }
 
+    // Gefuseerde Kyurem bestaat vanaf Zwart 2/Wit 2 (DNA Splicers)
+    if (code3 === 'IRE' || code3 === 'IRD') game.altForms = { 646: { 1: 'White Kyurem', 2: 'Black Kyurem' } };
     game._fs = fs; game._narcs = narcs;
     game.finalize = () => { writeStarterText(); writeDexArea(); writeArm9(); };
     return game;

@@ -65,8 +65,9 @@ Bijgehouden zodat dit later nog toegevoegd kan worden. Alles hieronder is **nog 
 - Niet in-game getest (alles), incl. de Ultra Necrozma-cutscene (Necrozma blijft Necrozma).
 
 ## Vormen
-- Andere vormen: Kyurem White/Black (X/Y/ORAS/Gen 7) getest in de data; Zygarde/Necrozma-vormen (Sun/Moon, USUM) niet getest (geen ROM). B2W2 (Kyurem) nog niet.
-- Zygarde Complete en Ultra Necrozma zijn gevechtsvormen: Zygarde met Power Construct wordt Complete in het gevecht; Ultra Necrozma kan niet als wilde vorm.
+- Andere vormen getest in de data (schrijven + opnieuw inlezen): Kyurem White/Black (X/Y, ORAS, Ultra Sun, Zwart 2/Wit 2), Zygarde 10%/Power Construct/Complete en Necrozma Dusk Mane/Dawn Wings/Ultra (Ultra Sun). Nog niet in-game gespeeld.
+- Zygarde Complete en Ultra Necrozma zijn gevechtsvormen: na het gevecht/vangen kan de game ze terugzetten naar hun gewone vorm (zoals in het origineel).
+- Zwart 2/Wit 2: statics (Kyurem in Giant Chasm) krijgen nog geen andere vorm, alleen wilde Pokémon en trainers.
 
 ## Mystery Dungeon (Blue Rescue Team, Explorers of Sky)
 - Wordt niet herkend: andere soort game, zou een aparte module nodig hebben.
