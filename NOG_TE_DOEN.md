@@ -64,6 +64,10 @@ Bijgehouden zodat dit later nog toegevoegd kan worden. Alles hieronder is **nog 
 - Wilde Pokémon: in sommige gebieden past "elk slot apart" niet; daar wordt elke soort door één vaste willekeurige soort vervangen (de log kan daar afwijken).
 - Niet in-game getest (alles), incl. de Ultra Necrozma-cutscene (Necrozma blijft Necrozma).
 
+## Vormen
+- Andere vormen: Kyurem White/Black (X/Y/ORAS/Gen 7) getest in de data; Zygarde/Necrozma-vormen (Sun/Moon, USUM) niet getest (geen ROM). B2W2 (Kyurem) nog niet.
+- Zygarde Complete en Ultra Necrozma zijn gevechtsvormen: Zygarde met Power Construct wordt Complete in het gevecht; Ultra Necrozma kan niet als wilde vorm.
+
 ## Mystery Dungeon (Blue Rescue Team, Explorers of Sky)
 - Wordt niet herkend: andere soort game, zou een aparte module nodig hebben.
 

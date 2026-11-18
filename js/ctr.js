@@ -368,7 +368,7 @@
           this.bag.forEach((v, q) => w16(ad, ta + bagOff + q * 2, v)); ad[ta + aiOff] = this.ai;
           this.mons.forEach((m) => {
             bd[m._b] = m.iv; if (m.item !== null) w16(bd, m._b + 8, m.item);
-            w16(bd, m._b + 4, m.species); w16(bd, m._b + 6, 0); bd[m._b + 2] = U.clamp(m.level, 1, 100);
+            w16(bd, m._b + 4, m.species); w16(bd, m._b + 6, m.form || 0); bd[m._b + 2] = U.clamp(m.level, 1, 100);
             if (m.moves) m.moves.forEach((v, q) => w16(bd, m._b + mvOff + q * 2, v));
           }); } });
       }
@@ -400,7 +400,7 @@
             this.mons.forEach((m) => {
               const iv = Math.min(31, m.iv >> 3), old = r32(bd, m._b + 8);
               U.w32(bd, m._b + 8, ((old & 0xC0000000) | iv | (iv << 5) | (iv << 10) | (iv << 15) | (iv << 20) | (iv << 25)) >>> 0);
-              w16(bd, m._b + 0x10, m.species); w16(bd, m._b + 0x12, 0); w16(bd, m._b + 0xE, U.clamp(m.level, 1, 100));
+              w16(bd, m._b + 0x10, m.species); w16(bd, m._b + 0x12, m.form || 0); w16(bd, m._b + 0xE, U.clamp(m.level, 1, 100));
               if (m.item !== null) w16(bd, m._b + 0x14, m.item);
               m.moves.forEach((v, q) => w16(bd, m._b + 0x18 + q * 2, v));
             }); } });
@@ -496,7 +496,7 @@
           commit() {
             const Zn = zoneU.get(z);
             this.slots.forEach((x) => {
-              w16(zd, x._o, x.species); zd[x._o + 2] = U.clamp(x.min, 1, 100); zd[x._o + 3] = U.clamp(Math.max(x.min, x.max), 1, 100);
+              w16(zd, x._o, x.species | ((x.form || 0) << 11)); zd[x._o + 2] = U.clamp(x.min, 1, 100); zd[x._o + 3] = U.clamp(Math.max(x.min, x.max), 1, 100);
               if (Zn) Zn.u.set(zd.subarray(x._o, x._o + 4), Zn.o3 + (x._o - Zn.enStart));
             });
             if (Zn) dirty.add(z);
@@ -530,7 +530,7 @@
         }
         if (!slots.length) continue;
         game.wild.push({ label: 'Zone ' + z, slots, commit() {
-          this.slots.forEach((x) => { w16(u, x._o, x.species); u[x._o + 2] = U.clamp(x.min, 1, 100); u[x._o + 3] = U.clamp(Math.max(x.min, x.max), 1, 100); });
+          this.slots.forEach((x) => { w16(u, x._o, x.species | ((x.form || 0) << 11)); u[x._o + 2] = U.clamp(x.min, 1, 100); u[x._o + 3] = U.clamp(Math.max(x.min, x.max), 1, 100); });
           dirty.add(z);
         } });
       }
@@ -597,7 +597,7 @@
               }
               if (!slots.length) continue;
               const W = { label: 'Gebied ' + ((i - 9) / 11) + '-' + k, slots, commit() {
-                this.slots.forEach((x, j) => { w16(u, x._o, x.species); if (j === 0) { u[x._t + 4] = U.clamp(x.min, 1, 100); u[x._t + 5] = U.clamp(Math.max(x.min, x.max), 1, 100); } });
+                this.slots.forEach((x, j) => { w16(u, x._o, x.species | ((x.form || 0) << 11)); if (j === 0) { u[x._t + 4] = U.clamp(x.min, 1, 100); u[x._t + 5] = U.clamp(Math.max(x.min, x.max), 1, 100); } });
                 dirty.set(i, area);
               } };
               (area.tables = area.tables || []).push(W); game.wild.push(W);
@@ -720,7 +720,7 @@
       for (let i = 3; i < 80; i++) {
         const e = hit + i * stride, s = r16(c, e);
         if (s < 1 || s > maxSp || c[e + 5] < 1 || c[e + 5] > 100 || c[e + 9] || c[e + 10] || c[e + 11]) break;
-        game.statics.push({ kind: 'gift', label: 'Gift #' + i, species: s, level: c[e + 5], commit() { w16(c, e, this.species); c[e + 4] = 0; } });
+        game.statics.push({ kind: 'gift', label: 'Gift #' + i, species: s, level: c[e + 5], commit() { w16(c, e, this.species); c[e + 4] = this.form || 0; } });
       }
       // Static encounters (legendaries, Birch's Poochyena, Voltorb, Kecleon...): 12-byte entries, level op +3
       const stOk = (e) => { const s = r16(c, e), it = r16(c, e + 4); return s >= 1 && s <= maxSp && c[e + 3] >= 1 && c[e + 3] <= 100 && c[e + 2] <= 31 && (it === 0xFFFF || it < 1000); };
@@ -736,7 +736,7 @@
       }
       if (stBest) for (let i = 0; i < stBest.n; i++) {
         const e = stBest.o + i * 12;
-        game.statics.push({ kind: 'static', label: 'Static #' + i, species: r16(c, e), level: c[e + 3], story: (/^0004000000055[DE]00$/.test(titleId) ? [716, 717] : [382, 383, 384, 386]).includes(r16(c, e)), commit() { w16(c, e, this.species); c[e + 2] = 0; } });
+        game.statics.push({ kind: 'static', label: 'Static #' + i, species: r16(c, e), level: c[e + 3], story: (/^0004000000055[DE]00$/.test(titleId) ? [716, 717] : [382, 383, 384, 386]).includes(r16(c, e)), commit() { w16(c, e, this.species); c[e + 2] = this.form || 0; } });
       }
       else game.warnings.push('Static encounters niet gevonden');
       // Plaats van gifts/statics in ORAS (voor het "waar vang je wat"-overzicht), op basis van de originele Pokémon
@@ -761,7 +761,7 @@
             : ((sp === 1 || sp === 4 || sp === 7) && lv === 10 && st.kind === 'gift') || (sp === 448 && st.kind === 'gift') ? 'niet gebruikt in het spel'
             : (sp === 25 && st.kind !== 'gift') ? undefined : P[sp];
           // nodig om een andere Mirage spot te openen: blijft dezelfde soort met story-bescherming
-          const KEY = { 480: 'Dialga/Palkia', 481: 'Dialga/Palkia', 482: 'Dialga/Palkia', 483: 'Giratina', 484: 'Giratina', 643: 'Kyurem', 644: 'Kyurem', 249: 'Raikou/Entei/Suicune', 250: 'Raikou/Entei/Suicune' };
+          const KEY = { 480: 'Dialga/Palkia', 481: 'Dialga/Palkia', 482: 'Dialga/Palkia', 483: 'Giratina', 484: 'Giratina', 643: 'Kyurem', 644: 'Kyurem', 641: 'Landorus', 642: 'Landorus', 249: 'Raikou/Entei/Suicune', 250: 'Raikou/Entei/Suicune' };
           if (KEY[sp] && st.kind === 'static') st.key = KEY[sp];
         }
       }
@@ -805,13 +805,13 @@
         game.statics = [];
         for (let o = g0 + 3 * 0x14; o + 0x14 <= g1; o += 0x14) {
           const sp = r16(d, o); if (sp < 1 || sp > maxSp) continue;
-          game.statics.push({ kind: 'gift', label: 'Gift', species: sp, level: d[o + 3], commit() { w16(d, o, this.species); d[o + 2] = 0; } });
+          game.statics.push({ kind: 'gift', label: 'Gift', species: sp, level: d[o + 3], commit() { w16(d, o, this.species); d[o + 2] = this.form || 0; } });
         }
         const STORY = isUSUM ? [791, 792, 800] : [791, 792]; // Solgaleo/Lunala (en Necrozma in USUM) zijn nodig voor het verhaal
         const [s0, s1] = G.subs[1];
         for (let o = s0; o + 0x38 <= s1; o += 0x38) {
           const sp = r16(d, o); if (sp < 1 || sp > maxSp) continue;
-          game.statics.push({ kind: 'static', label: 'Static', species: sp, level: d[o + 3], story: STORY.includes(sp), commit() { w16(d, o, this.species); d[o + 2] = 0; } });
+          game.statics.push({ kind: 'static', label: 'Static', species: sp, level: d[o + 3], story: STORY.includes(sp), commit() { w16(d, o, this.species); d[o + 2] = this.form || 0; } });
         }
         if (G.subs.length > 4) {
           const [t0, t1] = G.subs[4];
@@ -1247,6 +1247,13 @@
 
     game.isPatchBased = true; game._files = files; game._reader = reader;
     game.titleId = titleId;
+    // Andere (blijvende) vormen die de randomizer mag kiezen: gefuseerde Kyurem, Zygarde 10%/Power Construct (Gen 7), Necrozma Dusk Mane/Dawn Wings (USUM)
+    game.altForms = { 646: { 1: 'White Kyurem', 2: 'Black Kyurem' } };
+    if (isG7) game.altForms[718] = { 1: 'Zygarde 10%', 2: 'Zygarde 10% (Power Construct)', 3: 'Zygarde 50% (Power Construct)' };
+    if (isUSUM) game.altForms[800] = { 1: 'Dusk Mane Necrozma', 2: 'Dawn Wings Necrozma' };
+    // ORAS: legendaries van de andere versie die nodig zijn om een Mirage spot te openen (Giratina, Kyurem, Landorus) + de andere weer-legendary
+    if (titleId === '000400000011C500') game.versionExtras = { species: [484, 643, 383, 641], areas: ['Sky Pillar', 'Victory Road'] };
+    if (titleId === '000400000011C400') game.versionExtras = { species: [483, 644, 382, 642], areas: ['Sky Pillar', 'Victory Road'] };
     // LayeredFS (Luma3DS): alleen de gewijzigde RomFS-bestanden, in de juiste mappenstructuur
     game.layeredFsFiles = async () => {
       await runFixups();

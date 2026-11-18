@@ -28,7 +28,7 @@
       [/ evolueert nu in /g, ' now evolves into '], [/: ruil -> level 37 /g, ': trade -> level 37 '], [/: ruil met item -> level 37 /g, ': trade with item -> level 37 '],
       [/: ruil met item -> level stijgen terwijl hij (.*) vasthoudt /g, ': trade with item -> level up while holding $1 '],
       [/Item-ball /g, 'Item ball '], [/Verborgen item /g, 'Hidden item '], [/Prijs\/ruil /g, 'Prize/exchange '], [/\(normaal 1 op (\d+)\)/g, '(normal 1 in $1)'], [/^1 op (\d+)/, '1 in $1'],
-      [/\(gras\/grot\)/g, '(grass/cave)'], [/\(hoog gras\)/g, '(tall grass)'], [/\(ei\)/g, '(egg)'], [/\(zweven\)/g, '(soaring)'], [/\(fossiel\)/g, '(fossil)'], [/\(ruimte\)/g, '(space)'], [/\(vogelzwerm\)/g, '(bird flock)'], [/\(beschermd: nodig voor /g, '(protected: needed for '], [/\(beschermd: story\)/g, '(protected: story)'], [/Zweven \(/g, 'Soaring ('], [/ bij Dewford /g, ' near Dewford '], [/(^|· )bij Fortree/g, '$1near Fortree'], [/niet gebruikt in het spel/g, 'not used in the game'], [/\(bloemen\)/g, '(flowers)'], [/\(oude hengel\)/g, '(Old Rod)'], [/\(goede hengel\)/g, '(Good Rod)'], [/\(superhengel\)/g, '(Super Rod)'], [/\(horde\)/g, '(horde)'], [/Gras groep (\d+) map (\d+)/g, 'Grass group $1 map $2'], [/Water groep (\d+) map (\d+)/g, 'Water group $1 map $2'], [/\(surfen\)/g, '(surfing)'], [/\(vissen\)/g, '(fishing)'], [/\(rotsen\)/g, '(rock smash)'], [/Gebied /g, 'Area '],
+      [/\(gras\/grot\)/g, '(grass/cave)'], [/\(hoog gras\)/g, '(tall grass)'], [/\(ei\)/g, '(egg)'], [/\(zweven\)/g, '(soaring)'], [/\(fossiel\)/g, '(fossil)'], [/\(ruimte\)/g, '(space)'], [/\(vogelzwerm\)/g, '(bird flock)'], [/^--- Andere vormen ---$/, '--- Alternate forms ---'], [/^--- Legendaries van de andere versie \(nodig voor Mirage spots\) ---$/, '--- Legendaries from the other version (needed for Mirage spots) ---'], [/zeldzaam\)/g, 'rare)'], [/\(geen: de Pokémon met andere vormen kwamen deze keer niet voor\)/, '(none: the Pokémon with other forms did not appear this time)'], [/\(beschermd: nodig voor /g, '(protected: needed for '], [/\(beschermd: story\)/g, '(protected: story)'], [/Zweven \(/g, 'Soaring ('], [/ bij Dewford /g, ' near Dewford '], [/(^|· )bij Fortree/g, '$1near Fortree'], [/niet gebruikt in het spel/g, 'not used in the game'], [/\(bloemen\)/g, '(flowers)'], [/\(oude hengel\)/g, '(Old Rod)'], [/\(goede hengel\)/g, '(Good Rod)'], [/\(superhengel\)/g, '(Super Rod)'], [/\(horde\)/g, '(horde)'], [/Gras groep (\d+) map (\d+)/g, 'Grass group $1 map $2'], [/Water groep (\d+) map (\d+)/g, 'Water group $1 map $2'], [/\(surfen\)/g, '(surfing)'], [/\(vissen\)/g, '(fishing)'], [/\(rotsen\)/g, '(rock smash)'], [/Gebied /g, 'Area '],
       [/\[belangrijk/g, '[important'], [/, type /g, ', type '], [/ \(was /g, ' (was '], [/^Gift /, 'Gift '], [/ wild: /g, ' wild: '],
     ] : null;
     const L = (s) => { if (EN && typeof s === 'string') for (const [rx, rep] of EN) s = s.replace(rx, rep); log.push(s); };
@@ -560,6 +560,30 @@
     }
 
     if (game.warnings.length) { L('--- Opmerkingen ---'); game.warnings.forEach((w) => L('* ' + (g.I18N && opt.lang === 'en' ? g.I18N.t(w) : w))); }
+    // ---------- Versie-exclusieve legendaries (ORAS): in een zeldzaam gras-slot van een late route ----------
+    if (opt.protectStory && game.versionExtras && game.wild.length) {
+      const VE = game.versionExtras, homes = [];
+      for (const lab of VE.areas) for (const A of game.wild) if (A.label === lab) homes.push(A);
+      const lines = [];
+      VE.species.forEach((spx, n) => {
+        const A = homes[n % homes.length]; if (!A) return;
+        const grass = A.slots.filter((x) => x.method === 'gras/grot'); if (!grass.length) return;
+        const x = grass[grass.length - 1 - Math.floor(n / homes.length) % 2]; // de twee zeldzaamste (1%) slots
+        x.species = spx; x.form = 0; A.commit(); lines.push(nm(spx) + ': ' + A.label + ' (gras/grot, zeldzaam) Lv' + x.min);
+      });
+      if (lines.length) { L('--- Legendaries van de andere versie (nodig voor Mirage spots) ---'); lines.forEach(L); L(''); }
+    }
+
+    // ---------- Andere vormen (gefuseerd Kyurem, Zygarde 10%, Necrozma Dusk Mane/Dawn Wings) ----------
+    if (opt.altForms && game.altForms) {
+      const AF = game.altForms, lines = [], pickForm = (sp) => { const f = AF[sp]; if (!f) return 0; const ks = [0, ...Object.keys(f).map(Number)]; return R.pick(ks); };
+      const fn = (sp, f) => (f && AF[sp] && AF[sp][f]) || nm(sp);
+      for (const A of game.wild) { let ch = false; for (const x of A.slots) if (AF[x.species]) { x.form = pickForm(x.species); ch = true; if (x.form) lines.push(fn(x.species, x.form) + ': ' + A.label); } if (ch) A.commit(); }
+      if (game.statics) for (const st of game.statics) if (AF[st.species] && !st.story) { st.form = pickForm(st.species); st.commit(); if (st.form) lines.push(fn(st.species, st.form) + ': ' + (st.place || st.label)); }
+      for (const t of game.trainers) { let ch = false; for (const m of t.mons) if (AF[m.species]) { m.form = pickForm(m.species); ch = true; if (m.form) lines.push(fn(m.species, m.form) + ': ' + t.label); } if (ch) t.commit(); }
+      L('--- Andere vormen ---'); (lines.length ? lines : ['(geen: de Pokémon met andere vormen kwamen deze keer niet voor)']).forEach(L); L('');
+    }
+
     game.finalize();
     return game.rom;
   }

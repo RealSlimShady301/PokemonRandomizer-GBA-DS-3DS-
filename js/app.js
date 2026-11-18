@@ -128,7 +128,7 @@
       species: game.species.length > 0, abilities: game.abilityMax > 0, starters: !!game.starters,
       wild: game.wild.length > 0, trainers: game.trainers.length > 0, learnsets: game.learnsets.size > 0, baseexp: game.species.some((s) => s.baseExp !== undefined),
       tms: !!game.tms, tmcompat: game.hasTmCompat, statics: !!(game.statics && game.statics.length), fielditems: !!game.fieldItems, shiny: !!(game.codeIps || game.setShinyOdds), trades: !!(game.trades && game.trades.length), eggs: !!game.eggs, evos: !!(game.evos && game.evos.list.length), marts: !!game.marts, strong: game.trainers.some((t) => t.ai !== undefined),
-      helditems: game.species.some((s) => s.heldItems), bag: game.trainers.some((t) => t.bag), important: game.trainers.some((t) => t.important),
+      helditems: game.species.some((s) => s.heldItems), altforms: !!game.altForms, bag: game.trainers.some((t) => t.bag), important: game.trainers.some((t) => t.important),
       story: !!(game.statics && game.statics.some((st) => st.story)), tradeevos: !!(game.evos && game.evos.list.some((e) => e.ent.some((x) => [...game.evos.methods.trade, ...game.evos.methods.tradeItem, ...game.evos.methods.tradeSpecies].includes(x.method)))),
     };
     document.querySelectorAll('[data-need]').forEach((el) => el.classList.toggle('off', !has[el.dataset.need]));
@@ -224,7 +224,7 @@
           learnsets: radio('learnsets'), firstMoveDamaging: chk('firstMoveDamaging'), noHmInLearnset: chk('noHmInLearnset'),
           tms: chk('tms'), tmCompat: radio('tmCompat'), tmCompatPct: num('tmCompatPct'),
           statics: radio('statics'), staticLegSwap: chk('staticLegSwap'), giftsToo: chk('giftsToo'), protectStory: chk('protectStory'), weakenStory: chk('weakenStory'), trades: chk('trades'), tradeReqToo: chk('tradeReqToo'), tradeNoLeg: chk('tradeNoLeg'), eggs: chk('eggs'), eggNoLeg: chk('eggNoLeg'), eggBasic: chk('eggBasic'),
-          fixTradeEvos: chk('fixTradeEvos'), randomEvos: chk('randomEvos'), monotype: $('monotype').value,
+          fixTradeEvos: chk('fixTradeEvos'), altForms: chk('altForms'), randomEvos: chk('randomEvos'), monotype: $('monotype').value,
           wildHeldItems: chk('wildHeldItems'), marts: chk('marts'), strongTrainers: chk('strongTrainers'), keepGymTypes: chk('keepGymTypes'), bossItems: chk('bossItems'),
           fieldItems: radio('fieldItems'), keepFieldTMs: chk('keepFieldTMs'),
           evoLevels: chk('evoLevels'), catchList: chk('catchList'), lang: window.I18N ? I18N.lang : 'nl',

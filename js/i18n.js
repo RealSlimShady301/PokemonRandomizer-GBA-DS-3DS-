@@ -92,6 +92,7 @@
     'Klaar! LayeredFS-zip gedownload.': 'Done! LayeredFS zip downloaded.', 'Vul het IP-adres van je 3DS in (staat bovenaan in FTPD).': 'Enter the IP address of your 3DS (shown at the top of FTPD).',
     'Versturen naar 3DS ({0})…': 'Sending to 3DS ({0})…', 'Klaar! {0} bestanden op je 3DS gezet. Sluit FTPD en start het spel.': 'Done! {0} files put on your 3DS. Close FTPD and start the game.',
     'Fout: {0}': 'Error: {0}',
+    'Andere vormen kunnen voorkomen: gefuseerde Kyurem (White/Black), Zygarde 10% en Power Construct (Sun/Moon), Necrozma Dusk Mane/Dawn Wings (Ultra Sun/Moon)': 'Alternate forms can appear: fused Kyurem (White/Black), Zygarde 10% and Power Construct (Sun/Moon), Necrozma Dusk Mane/Dawn Wings (Ultra Sun/Moon)',
     'Preset': 'Preset', 'Klassiek': 'Classic', 'Chaos': 'Chaos', 'Nuzlocke-vriendelijk': 'Nuzlocke-friendly', 'Standaard': 'Default',
     'Instellingencode kopiëren': 'Copy settings code', 'Code laden': 'Load code', 'Overzicht "waar vang je wat?" in de log': '"Where to catch what" overview in the log',
     'Evolutie-levels willekeurig (ongeveer ±30%)': 'Random evolution levels (about ±30%)', 'Preset "{0}" toegepast.': 'Preset "{0}" applied.',

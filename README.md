@@ -29,6 +29,7 @@ Welke opties je ziet hangt af van de geladen game.
 - **Aanvallen:** willekeurige level-up aanvallen (met voorkeur voor eigen type), TM's, TM-compatibiliteit.
 - **Items:** item-balls, verborgen items, NPC-items, Game Corner-prijzen en Poké Marts. Key items blijven op hun plek; een TM wordt altijd een andere TM; basisitems (Poké Balls, Potions…) blijven altijd te koop.
 - **Overige:** in-game trades, daycare-eieren, ruil-evoluties zonder ruilen, willekeurige evoluties en evolutie-levels, monotype-uitdaging, shiny-kans (tot 1 op 256), XP-rem tegen te snel levelen.
+- **Vormen & versies:** gefuseerde Kyurem (White/Black), Zygarde 10%/Power Construct (Sun/Moon) en Necrozma Dusk Mane/Dawn Wings (USUM) kunnen voorkomen; in ORAS komen de legendaries van de andere versie (bv. Palkia in Alpha Sapphire) in een zeldzaam slot in Sky Pillar/Victory Road, zodat Giratina, Kyurem en Landorus bereikbaar blijven.
 - **Presets & delen:** Klassiek, Chaos, Nuzlocke-vriendelijk met één klik, en een **instellingencode** om exact dezelfde instellingen met iemand te delen.
 - **Waar vang je wat?** De log bevat per Pokémon waar je hem kan vangen of krijgen (wild met levels, gifts, statics, trades), met echte plaatsnamen in GBA, X/Y en ORAS (in X/Y en ORAS ook hoe: gras, surfen, hengel, horde, DexNav; in ORAS ook waar gifts en statics zitten).
 - **Pokédex-gebiedskaart** wordt mee aangepast (DPPt, HGSS; GB/GBA doen dat vanzelf), zodat de Pokédex de nieuwe plaatsen toont.
