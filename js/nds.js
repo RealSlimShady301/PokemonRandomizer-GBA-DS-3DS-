@@ -409,8 +409,16 @@
         if (!okSp(sp) || lv < 5 || lv > 100) continue;
         const gift = op === ops[0];
         if (gift && gen === 4) { const it = r16(rom, o + 6), v = r16(rom, o + 8); if (it > 600 || (v & 0xFF00) !== 0x8000) continue; }
-        game.statics.push({ kind: gift ? 'gift' : 'static', label: (gift ? 'Gift ' : 'Static ') + PKDATA.nameOf(sp), species: sp, level: lv, story: !gift && story.includes(sp), commit() { w16(rom, o + 2, this.species); } });
+        const at = o; game.statics.push({ kind: gift ? 'gift' : 'static', label: (gift ? 'Gift ' : 'Static ') + PKDATA.nameOf(sp), species: sp, level: lv, story: !gift && story.includes(sp), commit() { w16(rom, at + 2, this.species); } });
         o += 5;
+      }
+      // Gen 5 gifts: 0x10C / 0x10E (resultaat-var 0x80xx, soort, vorm, level), bv. de aapjes, Magikarp, Zorua, Deerling, eieren
+      if (sn && gen === 5) for (const [a, b] of sn.subs) for (let o = a; o + 10 <= b; o++) {
+        const op = r16(rom, o); if (op !== 0x10C && op !== 0x10E) continue;
+        const v = r16(rom, o + 2), sp = r16(rom, o + 4), f = r16(rom, o + 6), lv = r16(rom, o + 8);
+        if ((v & 0xFF00) !== 0x8000 || !okSp(sp) || f > 30 || lv < 1 || lv > 100) continue;
+        const at = o; game.statics.push({ kind: 'gift', label: 'Gift ' + PKDATA.nameOf(sp) + (lv === 1 ? ' (ei)' : ''), species: sp, level: lv, commit() { w16(rom, at + 4, this.species); w16(rom, at + 6, this.form || 0); } });
+        o += 9;
       }
     }
 

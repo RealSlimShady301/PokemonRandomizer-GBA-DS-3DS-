@@ -21,23 +21,24 @@ Bijgehouden zodat dit later nog toegevoegd kan worden. Alles hieronder is **nog 
 - Niet in-game getest: verborgen items, Game Corner-prijzen, field items, marts, TM-compatibiliteit, shiny-kans.
 
 ## Diamond / Pearl / Platinum
+- Opgelost: static encounters werden op de verkeerde plek in het script geschreven (gold voor alle DS-games); nu nagekeken na opnieuw inlezen.
 - Gifts/statics: Eevee, Porygon en de meeste legendaries zijn ingebouwd; Dialga/Palkia op Spear Pillar, Togepi-ei, fossielen en Rotom nog niet (andere scriptvorm).
-- Poké Marts (lijsten niet gevonden in de code) en verborgen items.
+- Poké Marts en verborgen items zijn nu ingebouwd (Odd Keystone blijft liggen voor Spiritomb); NPC-items (giveitem via 0x8004) nog niet.
 - Daycare-eieren; Great Marsh-dagelijkse Pokémon; honingbomen.
 - Pokédex-gebiedskaart: wordt bijgewerkt, maar zonder onderscheid ochtend/dag/nacht (elke nieuwe Pokémon staat op alle tijdstippen).
 - Niet in-game getest: wilde Pokémon, starters, TM's, trades, items in het veld.
 
 ## HeartGold / SoulSilver
 - Gifts/statics: Dratini, Tyrogue, Eevee, de vogels, Mewtwo, Suicune, Snorlax, Sudowoodo, rode Gyarados... zijn ingebouwd; Lugia/Ho-Oh, eieren en fossielen nog niet.
-- Poké Marts en verborgen items.
+- Poké Marts en verborgen items zijn nu ingebouwd.
 - Bug-Catching Contest; Pokéwalker.
 - De cutscene vóór de starterkeuze kan nog de originele naam/sprite tonen.
 - Niet in-game getest: wilde Pokémon, Safari Zone, Headbutt-bomen, starters, TM's, trades, items in het veld.
 
 ## Black / White / Black 2 / White 2
 - DSi-versies (NDSi Enhanced): de vergrote tekst staat achter het DSi-gedeelte; op echte hardware niet getest.
-- Static encounters zijn ingebouwd (Reshiram/Zekrom in Zwart/Wit beschermd); gift-Pokémon (aapjes, fossielen, Zorua...) nog niet.
-- Poké Marts; NPC-items (andere scriptvorm).
+- Static encounters en gifts zijn ingebouwd (aapjes, Magikarp, Zorua, Deerling, eieren, Eevee); fossielen nog niet. Reshiram/Zekrom in Zwart/Wit beschermd.
+- Poké Marts zijn ingebouwd (Zwart/Wit: overlay 21, Zwart 2/Wit 2: a/2/8/2); NPC-items (andere scriptvorm) nog niet.
 - Hidden grottos; Join Avenue.
 - Pokédex-gebiedskaart ("habitat") toont nog de originele plaatsen: de game bewaart ze als afbeeldingen.
 - Starternaam: keuzescherm en verhaaltekst (gym-quiz, boeken, NPC's) aangepast; de lengte/gewicht-quiz (met getallen) noemt nog de originele starters.
@@ -69,7 +70,7 @@ Bijgehouden zodat dit later nog toegevoegd kan worden. Alles hieronder is **nog 
 ## Vormen
 - Andere vormen getest in de data (schrijven + opnieuw inlezen): Kyurem White/Black (X/Y, ORAS, Ultra Sun, Zwart 2/Wit 2), Zygarde 10%/Power Construct/Complete en Necrozma Dusk Mane/Dawn Wings/Ultra (Ultra Sun). Nog niet in-game gespeeld.
 - Zygarde Complete en Ultra Necrozma zijn gevechtsvormen: na het gevecht/vangen kan de game ze terugzetten naar hun gewone vorm (zoals in het origineel).
-- Zwart 2/Wit 2: statics (Kyurem in Giant Chasm) krijgen nog geen andere vorm, alleen wilde Pokémon en trainers.
+- Zwart 2/Wit 2: statics (Kyurem in Giant Chasm) kunnen geen andere vorm krijgen (het script-commando heeft geen vorm); gifts, wilde Pokémon en trainers wel.
 
 ## Mystery Dungeon (Blue Rescue Team, Explorers of Sky)
 - Wordt niet herkend: andere soort game, zou een aparte module nodig hebben.
