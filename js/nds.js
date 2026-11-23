@@ -297,6 +297,7 @@
     const a9comp = mp >= 8 && r32u(a9off + mp - 8) !== 0;
     let a9 = rom.subarray(a9off, a9off + a9size), a9stop = 0, a9dirty = false;
     if (a9comp) { const D = blzDec(rom.slice(a9off, a9off + (r32u(a9off + mp - 8) - a9ram))); a9 = D.dec; a9stop = D.stop; }
+    game._a9 = () => a9;
     const c16 = (o) => a9[o] | (a9[o + 1] << 8), c32 = (o) => (a9[o] | (a9[o + 1] << 8) | (a9[o + 2] << 16) | (a9[o + 3] << 24)) >>> 0;
     const cw16 = (o, v) => { a9[o] = v & 0xFF; a9[o + 1] = (v >> 8) & 0xFF; a9dirty = true; };
     const cw32 = (o, v) => { cw16(o, v & 0xFFFF); cw16(o + 2, v >>> 16); };
@@ -567,8 +568,9 @@
       placeNarc(tp, narcBuild(files));
     };
     // NARC terugschrijven: op dezelfde plek als het past, anders achteraan in de lege ROM-ruimte (FAT + header bijwerken)
-    const placeNarc = (path, narc) => {
-      const id = fs.files[path], [s0, e0] = fs.range(id);
+    const placeNarc = (path, narc) => placeFile(fs.files[path], narc);
+    const placeFile = (id, narc) => {
+      const [s0, e0] = fs.range(id);
       let at = s0;
       if (narc.length > e0 - s0) {
         const dsi = rom[0x12] & 2, used = Math.max(r32u(0x80), dsi ? r32u(0x210) : 0), free = (used + 0x1FF) & ~0x1FF;
@@ -645,8 +647,66 @@
 
     // Gefuseerde Kyurem bestaat vanaf Zwart 2/Wit 2 (DNA Splicers)
     if (code3 === 'IRE' || code3 === 'IRD') game.altForms = { 646: { 1: 'White Kyurem', 2: 'Black Kyurem' } };
+    // ---- Poké Marts ----
+    // Gen 4: tabel met pointers (RAM-adressen) naar winkellijsten in arm9 (u16 items, einde 0xFFFF); de Seal-winkel (7x7 kleine nummers) overslaan
+    // Zwart 2/Wit 2: archief a/2/8/2, één bestand per winkel. Zwart/Wit: vaste plekken in overlay 21 (gecomprimeerd).
+    game.marts = null;
+    let writeOverlay21 = () => {};
+    try {
+      if (gen === 4) {
+        const ITEMMAX = 540, listAt = (o) => { const it = []; for (let q = o; q + 2 <= a9.length && it.length < 40; q += 2) { const v = c16(q); if (v === 0xFFFF) return it; if (v < 1 || v > ITEMMAX) return null; it.push(v); } return null; };
+        let best = null;
+        for (let o = 0; o + 80 <= a9.length; o += 4) {
+          let n = 0; while (o + n * 4 + 4 <= a9.length) { const p = c32(o + n * 4); if (p < a9ram || p >= a9ram + a9.length) break; const l = listAt(p - a9ram); if (!l || !l.length) break; n++; }
+          if (n >= 20 && (!best || n > best.n)) best = { o, n };
+        }
+        if (best) {
+          const slots = [];
+          for (let i = 0; i < best.n; i++) {
+            const lo = c32(best.o + i * 4) - a9ram, l = listAt(lo);
+            if (l.length === 7 && l.every((v) => v <= 49)) continue; // Seals
+            l.forEach((v, q) => slots.push({ item: v, orig: v, _o: lo + q * 2 }));
+          }
+          if (slots.length >= 20) game.marts = { slots, commit() { this.slots.forEach((x) => cw16(x._o, x.item)); } };
+        }
+      } else if (code3 === 'IRE' || code3 === 'IRD') {
+        const N = narcAt('a/2/8/2');
+        if (N && N.subs.length >= 20) {
+          const slots = [];
+          for (const [a, b] of N.subs) for (let o = a; o + 2 <= b; o += 2) { const v = r16(rom, o); if (v >= 1 && v <= 638) slots.push({ item: v, orig: v, _o: o }); }
+          if (slots.length >= 20) game.marts = { slots, commit() { this.slots.forEach((x) => w16(rom, x._o, x.item)); } };
+        }
+      } else if (code3 === 'IRB' || code3 === 'IRA') {
+        const OFFS = { IRB: [0x51538, 0x5153C, 0x51546, 0x5154C, 0x51564, 0x51590, 0x515E4, 0x515F2, 0x51600, 0x51610, 0x51620, 0x51630, 0x51640, 0x51650, 0x51662, 0x51674, 0x51686, 0x5169C, 0x516B2, 0x516C8, 0x516F8, 0x51714, 0x51734, 0x51774, 0x51796, 0x517BA],
+          IRA: [0x51530, 0x51534, 0x5153E, 0x51544, 0x5155C, 0x51588, 0x515DC, 0x515EA, 0x515F8, 0x51608, 0x51618, 0x51628, 0x51638, 0x51648, 0x5165A, 0x5166C, 0x5167E, 0x51694, 0x516AA, 0x516C0, 0x516F0, 0x5170C, 0x5172C, 0x5176C, 0x5178E, 0x517B2] }[code3];
+        const SIZES = [2, 2, 3, 4, 4, 6, 7, 7, 8, 8, 8, 8, 8, 9, 9, 9, 11, 11, 11, 11, 14, 16, 16, 17, 18, 19];
+        const y9 = r32u(0x50), y9n = r32u(0x54) / 32;
+        let ent = -1; for (let i = 0; i < y9n; i++) if (r32u(y9 + i * 32) === 21) ent = y9 + i * 32;
+        if (ent >= 0) {
+          const fid = r32u(ent + 0x18), cf = r32u(ent + 0x1C), [fs0, fe0] = fs.range(fid), comp = (cf >>> 24) & 1;
+          let ov = rom.slice(fs0, fe0), ovStop = 0;
+          if (comp) { const D = blzDec(ov); ov = D.dec; ovStop = D.stop; }
+          const slots = [];
+          OFFS.forEach((o, i) => { for (let q = 0; q < SIZES[i]; q++) { const v = ov[o + q * 2] | (ov[o + q * 2 + 1] << 8); if (v >= 1 && v <= 638) slots.push({ item: v, orig: v, _o: o + q * 2 }); } });
+          // controle: de winkels moeten met gewone winkelitems beginnen (anders klopt de versie niet)
+          if (slots.length >= 200 && slots.some((x) => x.orig === 4) && slots.some((x) => x.orig === 17)) {
+            let dirtyOv = false;
+            game.marts = { slots, commit() { this.slots.forEach((x) => { ov[x._o] = x.item & 0xFF; ov[x._o + 1] = x.item >> 8; }); dirtyOv = true; } };
+            writeOverlay21 = () => {
+              if (!dirtyOv) return;
+              const data = comp ? blzEnc(ov, ovStop) : ov;
+              placeFile(fid, data);
+              U.w32(rom, ent + 0x1C, ((cf & 0xFF000000) | (comp ? data.length : 0)) >>> 0);
+              w16(rom, 0x15E, crc16(rom, 0, 0x15E));
+            };
+          }
+        }
+      }
+    } catch (e) { game.marts = null; }
+    if (!game.marts) game.warnings.push('Poké Marts niet gevonden');
+
     game._fs = fs; game._narcs = narcs;
-    game.finalize = () => { writeStarterText(); writeDexArea(); writeArm9(); };
+    game.finalize = () => { writeStarterText(); writeDexArea(); writeOverlay21(); writeArm9(); };
     return game;
   }
 
