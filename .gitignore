@@ -13,3 +13,8 @@ Pokemon_ HeartGold Version/
 _uitgepakt/
 *_log.txt
 *.ips
+
+# programma's en downloads horen niet in de repo
+*.exe
+*.crdownload
+*.part
