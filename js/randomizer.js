@@ -47,7 +47,8 @@
     const tmSet = new Set(tmItems);
     const isTM = (i) => tmSet.has(i);
     // key items, HM's, Mega Stones, Master Ball (prijs 0): blijven op hun plek en worden nooit elders uitgedeeld
-    const isProtected = (i) => !!(game.itemPrice && game.itemPrice(i) === 0);
+    // prijs 0 = key item; daarnaast items die nodig zijn voor een event (bv. Odd Keystone voor Spiritomb in Gen 4)
+    const isProtected = (i) => !!(game.itemPrice && game.itemPrice(i) === 0) || !!(game.keepItems && game.keepItems.includes(i));
     const tmPool = tmItems.filter((i) => !isProtected(i)); // bv. TM70 (Flash) heeft prijs 0 in ORAS
     // namen voor de log (uit de ROM gelezen waar mogelijk, anders het nummer)
     const fix = (t) => (t && /[A-Z]{3}/.test(t) && t === t.toUpperCase() ? t.charAt(0) + t.slice(1).toLowerCase() : t);

@@ -363,7 +363,20 @@
           if (it < 1 || it > maxIt || q < 1 || q > 99) continue;
           entries.push({ item: it, orig: it, qty: q, _o: o + 4 });
         }
-        if (entries.length > 100) game.fieldItems = { entries, ballCount: entries.length, commit() { this.entries.forEach((e) => w16(rom, e._o, e.item)); } };
+        const ballCount = entries.length;
+        if (gen === 4) game.keepItems = [111]; // Odd Keystone (Spiritomb)
+        // DPPt/HGSS: verborgen items in een tabel in arm9 (8 bytes: item u16, aantal u8, bereik u8, 0 u16, vlag u16)
+        if (gen === 4) {
+          let best = null;
+          for (let o = 0; o + 8 * 150 <= a9.length; o += 2) {
+            let n = 0; const dist = new Set();
+            while (o + (n + 1) * 8 <= a9.length) { const b = o + n * 8, it = c16(b), q = a9[b + 2]; if (it < 1 || it > maxIt || q < 1 || q > 99 || c16(b + 4) !== 0 || c16(b + 6) > 4000) break; dist.add(it); n++; }
+            if (n >= 150 && dist.size >= 25 && (!best || n > best.n)) best = { o, n };
+            if (n) o += Math.max(0, n * 8 - 2);
+          }
+          if (best) for (let i = 0; i < best.n; i++) { const b = best.o + i * 8; entries.push({ item: c16(b), orig: c16(b), qty: a9[b + 2], hidden: true, _a9: b }); }
+        }
+        if (entries.length > 100) game.fieldItems = { entries, ballCount, commit() { this.entries.forEach((e) => (e._a9 !== undefined ? cw16(e._a9, e.item) : w16(rom, e._o, e.item))); } };
       }
     }
 
